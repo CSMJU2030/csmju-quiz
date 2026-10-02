@@ -1,0 +1,4 @@
+# Prisma client ที่ generate ตอน postinstall — ไม่ใช่ซอร์สที่เขียนเอง (ไม่อยู่ใน git)
+src/generated/
+dist/
+coverage/

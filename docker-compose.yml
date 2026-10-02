@@ -1,0 +1,53 @@
+# ทางเลือกเสริม: รันฐานข้อมูล + backend + frontend ของ CSMJU Quiz ด้วย Docker
+#   cp backend/.env.example backend/.env   (แก้ค่า และตั้ง POSTGRES_PASSWORD ใน .env ที่ราก)
+#   docker compose up -d --build
+# ทางหลักตาม LOCAL_INTEGRATION_GUIDE คือใช้ PostgreSQL ตัวเดียวกับ Core Hub ที่ :5432
+#   แล้วสร้างฐานข้อมูล quiz_db แยก — กรณีนั้นรันแค่ backend/frontend ด้วย pnpm ก็พอ
+# db ในไฟล์นี้เปิดที่ host :5434 เพื่อไม่ชนกับ PostgreSQL ตัวหลักที่ :5432
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: quiz_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?ตั้ง POSTGRES_PASSWORD ใน .env ที่ราก repo}
+    ports:
+      - "5434:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d quiz_db"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file: backend/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/quiz_db
+      NODE_ENV: production
+    ports:
+      - "3002:3002"
+    depends_on:
+      db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        # frontend เป็นทางเข้าเดียว — ส่ง /api/* และ /auth/* ต่อไป backend ในเครือข่ายของ compose (standards 1.7.0)
+        BACKEND_URL: ${BACKEND_URL:-http://backend:3002}
+        NEXT_PUBLIC_CORE_HUB_WEB_URL: ${NEXT_PUBLIC_CORE_HUB_WEB_URL:-http://127.0.0.1:3100}
+    ports:
+      - "3102:3102"
+    depends_on:
+      - backend
+
+volumes:
+  db-data:

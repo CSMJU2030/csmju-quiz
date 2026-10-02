@@ -1,3 +1,13 @@
+# workspace ของ frontend + backend (กฎ QA-05 · repo-structure.md ข้อ 3)
 packages:
-  - 'frontend'
-  - 'backend'
+  - backend
+  - frontend
+# pnpm 12 รัน build script ของ dependency เฉพาะที่อนุญาตไว้ที่นี่ (ไม่อนุญาต = install ล้ม)
+# prisma ต้องใช้ตอน generate client · esbuild/unrs-resolver/@parcel/watcher เป็น native ของ Next.js/ESLint
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/engines': true
+  '@scarf/scarf': false
+  esbuild: true
+  prisma: true
+  unrs-resolver: true
