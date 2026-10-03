@@ -1,0 +1,28 @@
+# Secrets — ห้าม commit เด็ดขาด
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.pem
+*.key
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+coverage/
+# Prisma 7 client (สร้างใหม่ด้วย prisma generate) — comment ต้องอยู่คนละบรรทัดกับ pattern
+generated/
+*.tsbuildinfo
+conformance-report.json
+
+# ห้ามใช้ lockfile อื่นนอกจาก pnpm (QA-05)
+package-lock.json
+yarn.lock
+
+# ยกเว้นไฟล์ template
+!.env.example

@@ -1,0 +1,202 @@
+// CSMJU Quiz — schema ของระบบย่อย (ฐานข้อมูลของระบบนี้เท่านั้น)
+// ชื่อตาราง/คอลัมน์เป็น snake_case ผ่าน @map / @@map · field ใน Prisma/TS เป็น camelCase
+// ตัวตนผู้ใช้เก็บเป็น core_user_id (ค่า sub จาก token) เท่านั้น — ไม่มีตาราง users ของตัวเอง
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "cjs"
+  // ให้ไฟล์ที่ generate อ้างกันด้วย .js — ทำงานได้ทั้งตอน build (dist) และตอนรันเทส
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum GameStatus {
+  LOBBY
+  ACTIVE
+  FINISHED
+  CANCELLED
+}
+
+enum GamePhase {
+  LOBBY
+  QUESTION
+  RESULT
+  LEADERBOARD
+  PODIUM
+}
+
+/// แบบทดสอบ — เจ้าของคือผู้สอน (core_user_id)
+model Quiz {
+  id              String     @id @default(uuid()) @db.Uuid
+  ownerCoreUserId String     @map("owner_core_user_id")
+  title           String     @db.VarChar(150)
+  description     String     @default("") @db.VarChar(500)
+  status          QuizStatus @default(DRAFT)
+  version         Int        @default(1)
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  questions    Question[]
+  gameSessions GameSession[]
+
+  @@index([ownerCoreUserId, updatedAt])
+  @@map("quizzes")
+}
+
+model Question {
+  id               String       @id @default(uuid()) @db.Uuid
+  quizId           String       @map("quiz_id") @db.Uuid
+  position         Int
+  type             QuestionType @default(MULTIPLE_CHOICE)
+  prompt           String       @db.VarChar(300)
+  imageUrl         String?      @map("image_url") @db.VarChar(2048)
+  timeLimit        Int          @default(20) @map("time_limit")
+  points           Int          @default(1000)
+  tags             String[]     @default([])
+  difficulty       Difficulty   @default(MEDIUM)
+  /// id ของคำถามในคลังที่คัดลอกมา — แสดงที่มาเท่านั้น ไม่ผูกข้อมูลกัน
+  sourceBankItemId String?      @map("source_bank_item_id") @db.Uuid
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  quiz    Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options QuestionOption[]
+
+  @@unique([quizId, position])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String   @id @default(uuid()) @db.Uuid
+  questionId String   @map("question_id") @db.Uuid
+  position   Int
+  text       String   @db.VarChar(120)
+  isCorrect  Boolean  @default(false) @map("is_correct")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, position])
+  @@map("question_options")
+}
+
+/// คลังคำถามของผู้สอน — การนำไปใช้คือ "คัดลอก" เข้าแบบทดสอบ
+model BankItem {
+  id              String       @id @default(uuid()) @db.Uuid
+  ownerCoreUserId String       @map("owner_core_user_id")
+  type            QuestionType @default(MULTIPLE_CHOICE)
+  prompt          String       @db.VarChar(300)
+  imageUrl        String?      @map("image_url") @db.VarChar(2048)
+  /// [{ id, text, isCorrect }] ตามลำดับ
+  options         Json
+  timeLimit       Int          @default(20) @map("time_limit")
+  points          Int          @default(1000)
+  tags            String[]     @default([])
+  difficulty      Difficulty   @default(MEDIUM)
+  usedCount       Int          @default(0) @map("used_count")
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([ownerCoreUserId, updatedAt])
+  @@map("bank_items")
+}
+
+/// ห้องเกม — เก็บสำเนาแบบทดสอบ ณ ตอนเปิดห้อง (quiz_snapshot) เพื่อให้เกม/รายงานไม่เปลี่ยนตามการแก้ภายหลัง
+model GameSession {
+  id                   String     @id @default(uuid()) @db.Uuid
+  quizId               String?    @map("quiz_id") @db.Uuid
+  hostCoreUserId       String     @map("host_core_user_id")
+  gamePin              String     @map("game_pin") @db.VarChar(6)
+  status               GameStatus @default(LOBBY)
+  phase                GamePhase  @default(LOBBY)
+  currentQuestionIndex Int        @default(0) @map("current_question_index")
+  questionStartedAt    DateTime?  @map("question_started_at") @db.Timestamptz(3)
+  phaseEndsAt          DateTime?  @map("phase_ends_at") @db.Timestamptz(3)
+  countdownEndsAt      DateTime?  @map("countdown_ends_at") @db.Timestamptz(3)
+  quizTitle            String     @map("quiz_title") @db.VarChar(150)
+  quizSnapshot         Json       @map("quiz_snapshot")
+  settings             Json
+  startedAt            DateTime?  @map("started_at") @db.Timestamptz(3)
+  finishedAt           DateTime?  @map("finished_at") @db.Timestamptz(3)
+  createdAt            DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  quiz    Quiz?        @relation(fields: [quizId], references: [id], onDelete: SetNull)
+  players GamePlayer[]
+  answers GameAnswer[]
+
+  @@index([gamePin, status])
+  @@index([hostCoreUserId, createdAt])
+  /// รายงานของผู้เปิดห้อง (host + FINISHED เรียงตาม finished_at)
+  @@index([hostCoreUserId, status, finishedAt])
+  @@map("game_sessions")
+}
+
+model GamePlayer {
+  id                String    @id @default(uuid()) @db.Uuid
+  gameSessionId     String    @map("game_session_id") @db.Uuid
+  /// ผู้เล่นที่ล็อกอินผ่าน Core Hub · null = ผู้เล่นที่เข้าด้วยบัตรเข้าห้อง (ไม่มีตัวตน)
+  coreUserId        String?   @map("core_user_id")
+  /// sha256 ของบัตรเข้าห้อง (เก็บเฉพาะ hash · ค่าจริงอยู่ในคุกกี้ของผู้เล่นเท่านั้น)
+  roomPassHash      String?   @unique @map("room_pass_hash") @db.Char(64)
+  roomPassExpiresAt DateTime? @map("room_pass_expires_at") @db.Timestamptz(3)
+  nickname          String    @db.VarChar(20)
+  avatarIndex       Int       @default(0) @map("avatar_index")
+  score             Int       @default(0)
+  streak            Int       @default(0)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  gameSession GameSession  @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  answers     GameAnswer[]
+
+  @@unique([gameSessionId, coreUserId])
+  @@unique([gameSessionId, nickname])
+  /// ประวัติการเล่นของผู้ใช้ (game_players.core_user_id = token.sub)
+  @@index([coreUserId])
+  @@map("game_players")
+}
+
+model GameAnswer {
+  id            String   @id @default(uuid()) @db.Uuid
+  gameSessionId String   @map("game_session_id") @db.Uuid
+  playerId      String   @map("player_id") @db.Uuid
+  questionIndex Int      @map("question_index")
+  questionId    String   @map("question_id") @db.Uuid
+  optionId      String?  @map("option_id") @db.Uuid
+  isCorrect     Boolean  @default(false) @map("is_correct")
+  isTimedOut    Boolean  @default(false) @map("is_timed_out")
+  points        Int      @default(0)
+  responseMs    Int      @default(0) @map("response_ms")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  gameSession GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  player      GamePlayer  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, questionIndex])
+  @@index([gameSessionId, questionIndex])
+  @@map("game_answers")
+}

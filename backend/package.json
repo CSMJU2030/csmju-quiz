@@ -1,0 +1,61 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CSMJU Quiz — backend (NestJS 11 · Prisma 7 · PostgreSQL)",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "start:dev": "nest start --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint \"{src,test,prisma}/**/*.ts\" && prettier --check \"{src,test,prisma}/**/*.ts\"",
+    "format": "prettier --write \"{src,test,prisma}/**/*.ts\"",
+    "test": "jest",
+    "test:e2e": "jest --config test/jest-e2e.config.js --runInBand",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:seed": "nest build && node prisma/seed.js",
+    "generate:openapi": "nest build && node scripts/generate-openapi.js",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/platform-express": "^11.1.6",
+    "@nestjs/swagger": "^11.2.0",
+    "@prisma/adapter-pg": "7.9.1",
+    "@prisma/client": "7.9.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "jose": "^5.10.0",
+    "pg": "^8.23.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@nestjs/cli": "^11.0.10",
+    "@nestjs/testing": "^11.1.6",
+    "@types/express": "^5.0.3",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.15.0",
+    "@types/supertest": "^6.0.3",
+    "dotenv": "^16.6.1",
+    "eslint": "^9.0.0",
+    "jest": "^30.0.0",
+    "prettier": "^3.6.0",
+    "prisma": "7.9.1",
+    "supertest": "^7.1.0",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.40.0"
+  }
+}

@@ -1,5 +1,20 @@
 {
   "name": "csmju-quiz",
+  "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9.15.9"
+  "description": "CSMJU Quiz — ระบบย่อยเกมตอบคำถามของ CSMJU2030 (NestJS backend + Next.js frontend)",
+  "packageManager": "pnpm@12.3.4",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:backend": "pnpm --filter backend start:dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "build": "pnpm -r build",
+    "check": "./standards/scripts/run-all-checks.sh .",
+    "generate:api": "pnpm --filter backend generate:openapi && pnpm --filter frontend generate:api-types"
+  }
 }

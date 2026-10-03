@@ -1,13 +1,35 @@
+# Secrets — ห้าม commit เด็ดขาด
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+*.pem
+*.key
+
+# Dependencies
 node_modules/
 .pnpm-store/
+
+# Build output
 .next/
 dist/
 build/
+out/
 coverage/
+*.tsbuildinfo
+next-env.d.ts
+conformance-report.json
+# Prisma 7 client (สร้างใหม่ด้วย prisma generate ตอน pnpm install)
+# หมายเหตุ: gitignore ไม่รองรับ comment ท้ายบรรทัด จึงต้องแยกบรรทัด
 generated/
-*.pem
-*.key
+
+# ห้ามใช้ lockfile อื่นนอกจาก pnpm (QA-05)
+package-lock.json
+yarn.lock
+
+# ไฟล์ภาพตัวอย่างจากผู้ช่วย AI (ไม่ใช่ส่วนของระบบ)
+Claude outputs/
+
+# ยกเว้นไฟล์ template
 !.env.example

@@ -1,0 +1,3480 @@
+{
+  "components": {
+    "schemas": {
+      "AnswerReceiptView": {
+        "properties": {
+          "accepted": {
+            "description": "ผลถูก/ผิดเปิดเผยตอนเฉลย ผ่าน state",
+            "type": "boolean"
+          },
+          "optionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "questionIndex": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "questionIndex",
+          "optionId",
+          "accepted"
+        ],
+        "type": "object"
+      },
+      "AnswerReviewOptionView": {
+        "properties": {
+          "isCorrect": {
+            "type": "boolean"
+          },
+          "optionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "optionId",
+          "text",
+          "isCorrect"
+        ],
+        "type": "object"
+      },
+      "AnswerReviewView": {
+        "properties": {
+          "earnedPoints": {
+            "type": "number"
+          },
+          "imageUrl": {
+            "nullable": true,
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerReviewOptionView"
+            },
+            "type": "array"
+          },
+          "points": {
+            "description": "คะแนนเต็มของข้อ",
+            "type": "number"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "questionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "questionNumber": {
+            "description": "ลำดับเริ่มที่ 1",
+            "type": "number"
+          },
+          "responseMs": {
+            "description": "มิลลิวินาที · null = ไม่ได้ตอบ",
+            "nullable": true,
+            "type": "number"
+          },
+          "result": {
+            "enum": [
+              "CORRECT",
+              "INCORRECT",
+              "TIMEOUT",
+              "NO_ANSWER"
+            ],
+            "type": "string"
+          },
+          "selectedOptionId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "timeLimit": {
+            "description": "วินาที",
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "questionNumber",
+          "questionId",
+          "type",
+          "prompt",
+          "timeLimit",
+          "points",
+          "options",
+          "result",
+          "earnedPoints"
+        ],
+        "type": "object"
+      },
+      "BankItemView": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "difficulty": {
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "imageUrl": {
+            "nullable": true,
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/OptionView"
+            },
+            "type": "array"
+          },
+          "ownerCoreUserId": {
+            "type": "string"
+          },
+          "points": {
+            "type": "number"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "timeLimit": {
+            "type": "number"
+          },
+          "type": {
+            "enum": [
+              "MULTIPLE_CHOICE",
+              "TRUE_FALSE"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "usedCount": {
+            "description": "จำนวนครั้งที่ถูกคัดลอกไปใช้ในแบบทดสอบ",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "ownerCoreUserId",
+          "type",
+          "prompt",
+          "timeLimit",
+          "points",
+          "tags",
+          "difficulty",
+          "usedCount",
+          "options",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "CreateBankItemDto": {
+        "properties": {
+          "difficulty": {
+            "default": "MEDIUM",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ],
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "ลิงก์รูปภาพ https:// เท่านั้น",
+            "nullable": true,
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/OptionInputDto"
+            },
+            "maxItems": 4,
+            "minItems": 2,
+            "type": "array"
+          },
+          "points": {
+            "description": "0 = ไม่คิดคะแนน",
+            "maximum": 5000,
+            "minimum": 0,
+            "type": "number"
+          },
+          "prompt": {
+            "description": "แบบร่างเว้นว่างได้ แต่เผยแพร่ต้องมี",
+            "maxLength": 300,
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "type": "array"
+          },
+          "timeLimit": {
+            "description": "วินาที",
+            "maximum": 300,
+            "minimum": 5,
+            "type": "number"
+          },
+          "type": {
+            "enum": [
+              "MULTIPLE_CHOICE",
+              "TRUE_FALSE"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "prompt",
+          "timeLimit",
+          "points",
+          "options"
+        ],
+        "type": "object"
+      },
+      "CreateGameSessionDto": {
+        "properties": {
+          "quizId": {
+            "description": "แบบทดสอบที่เผยแพร่แล้ว และคำถามครบทุกข้อ",
+            "format": "uuid",
+            "type": "string"
+          },
+          "shuffleOptions": {
+            "default": false,
+            "type": "boolean"
+          },
+          "shuffleQuestions": {
+            "default": false,
+            "type": "boolean"
+          },
+          "timeLimitOverride": {
+            "description": "ตั้งเวลาเท่ากันทุกข้อ (วินาที) · null = ใช้เวลาที่ตั้งในแต่ละข้อ",
+            "maximum": 300,
+            "minimum": 5,
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "quizId"
+        ],
+        "type": "object"
+      },
+      "CreateQuizDto": {
+        "properties": {
+          "description": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 150,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "GameJoinView": {
+        "properties": {
+          "avatarIndex": {
+            "type": "number"
+          },
+          "gameSessionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "playerId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "gameSessionId",
+          "playerId",
+          "nickname",
+          "avatarIndex"
+        ],
+        "type": "object"
+      },
+      "GameLobbyView": {
+        "properties": {
+          "gamePin": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "joined": {
+            "description": "ผู้เรียกเข้าห้องนี้แล้ว",
+            "type": "boolean"
+          },
+          "playerCount": {
+            "type": "number"
+          },
+          "quizTitle": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "LOBBY",
+              "ACTIVE",
+              "FINISHED",
+              "CANCELLED"
+            ],
+            "type": "string"
+          },
+          "totalQuestions": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "gamePin",
+          "quizTitle",
+          "status",
+          "playerCount",
+          "totalQuestions",
+          "joined"
+        ],
+        "type": "object"
+      },
+      "GameMeView": {
+        "properties": {
+          "answer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GameMyAnswerView"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "avatarIndex": {
+            "type": "number"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "playerId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "rank": {
+            "type": "number"
+          },
+          "score": {
+            "type": "number"
+          },
+          "streak": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "playerId",
+          "nickname",
+          "avatarIndex",
+          "score",
+          "streak",
+          "rank"
+        ],
+        "type": "object"
+      },
+      "GameMyAnswerView": {
+        "properties": {
+          "isCorrect": {
+            "description": "หลังเฉลยเท่านั้น",
+            "type": "boolean"
+          },
+          "isTimedOut": {
+            "type": "boolean"
+          },
+          "optionId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "points": {
+            "description": "หลังเฉลยเท่านั้น",
+            "type": "number"
+          }
+        },
+        "required": [
+          "isTimedOut"
+        ],
+        "type": "object"
+      },
+      "GameOptionView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isCorrect": {
+            "description": "ผู้เล่นเห็นเฉพาะหลังเฉลย (RESULT ขึ้นไป) · host เห็นตลอด",
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text"
+        ],
+        "type": "object"
+      },
+      "GamePlayerView": {
+        "properties": {
+          "avatarIndex": {
+            "type": "number"
+          },
+          "hasAnswered": {
+            "description": "ตอบข้อปัจจุบันแล้ว",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "number"
+          },
+          "score": {
+            "type": "number"
+          },
+          "streak": {
+            "description": "ตอบถูกติดกันตอนนี้",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "nickname",
+          "avatarIndex",
+          "score",
+          "streak",
+          "rank",
+          "hasAnswered"
+        ],
+        "type": "object"
+      },
+      "GameQuestionView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "imageUrl": {
+            "nullable": true,
+            "type": "string"
+          },
+          "index": {
+            "description": "ลำดับเริ่มที่ 0",
+            "type": "number"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/GameOptionView"
+            },
+            "type": "array"
+          },
+          "points": {
+            "type": "number"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "timeLimit": {
+            "type": "number"
+          },
+          "type": {
+            "enum": [
+              "MULTIPLE_CHOICE",
+              "TRUE_FALSE"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "index",
+          "type",
+          "prompt",
+          "timeLimit",
+          "points",
+          "options"
+        ],
+        "type": "object"
+      },
+      "GameReportSummaryView": {
+        "properties": {
+          "averageAccuracy": {
+            "description": "เปอร์เซ็นต์ตอบถูกเฉลี่ย 0–100",
+            "type": "number"
+          },
+          "finishedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "gamePin": {
+            "type": "string"
+          },
+          "id": {
+            "description": "id ของห้องเกม",
+            "format": "uuid",
+            "type": "string"
+          },
+          "playerCount": {
+            "type": "number"
+          },
+          "questionCount": {
+            "type": "number"
+          },
+          "quizId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "quizTitle": {
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "topScore": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "quizTitle",
+          "gamePin",
+          "playerCount",
+          "questionCount",
+          "averageAccuracy",
+          "topScore",
+          "finishedAt"
+        ],
+        "type": "object"
+      },
+      "GameReportView": {
+        "properties": {
+          "averageAccuracy": {
+            "description": "เปอร์เซ็นต์ตอบถูกเฉลี่ย 0–100",
+            "type": "number"
+          },
+          "finishedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "gamePin": {
+            "type": "string"
+          },
+          "id": {
+            "description": "id ของห้องเกม",
+            "format": "uuid",
+            "type": "string"
+          },
+          "playerCount": {
+            "type": "number"
+          },
+          "players": {
+            "items": {
+              "$ref": "#/components/schemas/ReportPlayerView"
+            },
+            "type": "array"
+          },
+          "questionCount": {
+            "type": "number"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/ReportQuestionView"
+            },
+            "type": "array"
+          },
+          "quizId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "quizTitle": {
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "topScore": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "quizTitle",
+          "gamePin",
+          "playerCount",
+          "questionCount",
+          "averageAccuracy",
+          "topScore",
+          "finishedAt",
+          "players",
+          "questions"
+        ],
+        "type": "object"
+      },
+      "GameSessionSummaryView": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "finishedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "gamePin": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "phase": {
+            "enum": [
+              "LOBBY",
+              "QUESTION",
+              "RESULT",
+              "LEADERBOARD",
+              "PODIUM"
+            ],
+            "type": "string"
+          },
+          "playerCount": {
+            "type": "number"
+          },
+          "quizId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "quizTitle": {
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "LOBBY",
+              "ACTIVE",
+              "FINISHED",
+              "CANCELLED"
+            ],
+            "type": "string"
+          },
+          "totalQuestions": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "gamePin",
+          "quizTitle",
+          "status",
+          "phase",
+          "playerCount",
+          "totalQuestions",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "GameSettingsView": {
+        "properties": {
+          "shuffleOptions": {
+            "type": "boolean"
+          },
+          "shuffleQuestions": {
+            "type": "boolean"
+          },
+          "timeLimitOverride": {
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "shuffleQuestions",
+          "shuffleOptions"
+        ],
+        "type": "object"
+      },
+      "GameStateView": {
+        "properties": {
+          "answeredCount": {
+            "type": "number"
+          },
+          "countdownEndsAt": {
+            "description": "นับถอยหลังเต็มจอ: ปิดรับคำตอบ (QUESTION) หรือ ข้อถัดไป/ประกาศผล (LEADERBOARD)",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "currentQuestionIndex": {
+            "type": "number"
+          },
+          "distribution": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "จำนวนคนที่เลือกแต่ละตัวเลือก { optionId: count } — ผู้เล่นเห็นหลังเฉลย",
+            "nullable": true,
+            "type": "object"
+          },
+          "finishedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "gamePin": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "me": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GameMeView"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "phase": {
+            "enum": [
+              "LOBBY",
+              "QUESTION",
+              "RESULT",
+              "LEADERBOARD",
+              "PODIUM"
+            ],
+            "type": "string"
+          },
+          "phaseEndsAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "playerCount": {
+            "type": "number"
+          },
+          "players": {
+            "description": "เรียงตามอันดับ",
+            "items": {
+              "$ref": "#/components/schemas/GamePlayerView"
+            },
+            "type": "array"
+          },
+          "question": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GameQuestionView"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "questionStartedAt": {
+            "description": "เวลาเริ่มนับเวลาตอบ (อาจอยู่ในอนาคตระหว่างนับ 3-2-1 ก่อนข้อแรก)",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "quizId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "quizTitle": {
+            "type": "string"
+          },
+          "results": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PodiumResultsView"
+              }
+            ],
+            "description": "สถิติและรางวัลพิเศษ — มีเฉพาะเมื่อ phase = PODIUM",
+            "nullable": true,
+            "type": "object"
+          },
+          "serverTime": {
+            "description": "เวลาของ server ใช้ชดเชยนาฬิกาเครื่องผู้ใช้",
+            "format": "date-time",
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/GameSettingsView"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "LOBBY",
+              "ACTIVE",
+              "FINISHED",
+              "CANCELLED"
+            ],
+            "type": "string"
+          },
+          "totalQuestions": {
+            "type": "number"
+          },
+          "viewer": {
+            "enum": [
+              "HOST",
+              "PLAYER"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "gamePin",
+          "status",
+          "phase",
+          "viewer",
+          "quizTitle",
+          "currentQuestionIndex",
+          "totalQuestions",
+          "serverTime",
+          "settings",
+          "answeredCount",
+          "playerCount",
+          "players",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "JoinGameDto": {
+        "properties": {
+          "avatarIndex": {
+            "default": 0,
+            "maximum": 47,
+            "minimum": 0,
+            "type": "number"
+          },
+          "nickname": {
+            "maxLength": 20,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "nickname"
+        ],
+        "type": "object"
+      },
+      "MeDto": {
+        "properties": {
+          "coreRole": {
+            "enum": [
+              "student",
+              "alumni",
+              "staff",
+              "lecturer",
+              "guest",
+              "admin"
+            ],
+            "type": "string"
+          },
+          "coreUserId": {
+            "description": "same as id — Global Identity",
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "description": "Core Hub user id (token sub)",
+            "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "session": {
+            "$ref": "#/components/schemas/MeSessionDto"
+          },
+          "subsystemRole": {
+            "enum": [
+              "PLAYER",
+              "HOST",
+              "ADMIN"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "coreUserId",
+          "email",
+          "coreRole",
+          "subsystemRole",
+          "permissions",
+          "session"
+        ],
+        "type": "object"
+      },
+      "MeSessionDto": {
+        "properties": {
+          "expiresAt": {
+            "description": "เวลาหมดอายุของ token/คุกกี้ session (ISO 8601 จาก exp) — frontend ใช้ต่ออายุล่วงหน้าผ่าน /auth/login",
+            "example": "2026-10-03T09:15:00.000Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expiresAt"
+        ],
+        "type": "object"
+      },
+      "OptionInputDto": {
+        "properties": {
+          "id": {
+            "description": "id เดิม (ถ้ามี) — ไม่ส่ง = ตัวเลือกใหม่",
+            "format": "uuid",
+            "type": "string"
+          },
+          "isCorrect": {
+            "type": "boolean"
+          },
+          "text": {
+            "maxLength": 120,
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "isCorrect"
+        ],
+        "type": "object"
+      },
+      "OptionView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isCorrect": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "isCorrect"
+        ],
+        "type": "object"
+      },
+      "PlayerGameResultView": {
+        "properties": {
+          "accuracy": {
+            "description": "0–100",
+            "type": "number"
+          },
+          "avatarIndex": {
+            "type": "number"
+          },
+          "awards": {
+            "description": "รางวัลพิเศษที่ได้ในเกมนี้",
+            "items": {
+              "enum": [
+                "fastest",
+                "streak",
+                "accuracy"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "correct": {
+            "type": "number"
+          },
+          "finishedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "id ของห้องเกม",
+            "format": "uuid",
+            "type": "string"
+          },
+          "incorrect": {
+            "type": "number"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "playerCount": {
+            "type": "number"
+          },
+          "playerId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "questionCount": {
+            "type": "number"
+          },
+          "quizTitle": {
+            "type": "string"
+          },
+          "rank": {
+            "description": "อันดับในห้อง (คะแนนเท่ากันได้อันดับเดียวกัน)",
+            "type": "number"
+          },
+          "score": {
+            "type": "number"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "timeout": {
+            "description": "หมดเวลา หรือไม่ได้ตอบ",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "quizTitle",
+          "finishedAt",
+          "playerId",
+          "nickname",
+          "avatarIndex",
+          "rank",
+          "playerCount",
+          "score",
+          "questionCount",
+          "correct",
+          "incorrect",
+          "timeout",
+          "accuracy",
+          "awards"
+        ],
+        "type": "object"
+      },
+      "PlayerGameReviewView": {
+        "properties": {
+          "accuracy": {
+            "description": "0–100",
+            "type": "number"
+          },
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerReviewView"
+            },
+            "type": "array"
+          },
+          "avatarIndex": {
+            "type": "number"
+          },
+          "averageResponseMs": {
+            "description": "เวลาตอบเฉลี่ยของข้อที่ตอบ (มิลลิวินาที)",
+            "type": "number"
+          },
+          "awards": {
+            "description": "รางวัลพิเศษที่ได้ในเกมนี้",
+            "items": {
+              "enum": [
+                "fastest",
+                "streak",
+                "accuracy"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "correct": {
+            "type": "number"
+          },
+          "finishedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "id ของห้องเกม",
+            "format": "uuid",
+            "type": "string"
+          },
+          "incorrect": {
+            "type": "number"
+          },
+          "maxStreak": {
+            "description": "ตอบถูกติดกันยาวที่สุด",
+            "type": "number"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "playerCount": {
+            "type": "number"
+          },
+          "playerId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "questionCount": {
+            "type": "number"
+          },
+          "quizTitle": {
+            "type": "string"
+          },
+          "rank": {
+            "description": "อันดับในห้อง (คะแนนเท่ากันได้อันดับเดียวกัน)",
+            "type": "number"
+          },
+          "score": {
+            "type": "number"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "timeout": {
+            "description": "หมดเวลา หรือไม่ได้ตอบ",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "quizTitle",
+          "finishedAt",
+          "playerId",
+          "nickname",
+          "avatarIndex",
+          "rank",
+          "playerCount",
+          "score",
+          "questionCount",
+          "correct",
+          "incorrect",
+          "timeout",
+          "accuracy",
+          "awards",
+          "maxStreak",
+          "averageResponseMs",
+          "answers"
+        ],
+        "type": "object"
+      },
+      "PlayerStatsView": {
+        "properties": {
+          "averageAccuracy": {
+            "description": "ความแม่นยำเฉลี่ยต่อเกม 0–100",
+            "type": "number"
+          },
+          "awardsEarned": {
+            "type": "number"
+          },
+          "bestRank": {
+            "nullable": true,
+            "type": "number"
+          },
+          "bestScore": {
+            "type": "number"
+          },
+          "bestStreak": {
+            "description": "ตอบถูกติดกันยาวที่สุดในเกมเดียว",
+            "type": "number"
+          },
+          "gamesPlayed": {
+            "type": "number"
+          },
+          "lastPlayedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "podiumFinishes": {
+            "description": "จำนวนครั้งที่ติด 3 อันดับแรก",
+            "type": "number"
+          },
+          "totalCorrect": {
+            "type": "number"
+          },
+          "totalQuestions": {
+            "type": "number"
+          },
+          "totalScore": {
+            "type": "number"
+          },
+          "wins": {
+            "description": "จำนวนครั้งที่ได้อันดับ 1",
+            "type": "number"
+          }
+        },
+        "required": [
+          "gamesPlayed",
+          "wins",
+          "podiumFinishes",
+          "bestScore",
+          "totalScore",
+          "averageAccuracy",
+          "totalCorrect",
+          "totalQuestions",
+          "bestStreak",
+          "awardsEarned"
+        ],
+        "type": "object"
+      },
+      "PodiumAwardView": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "fastest",
+              "streak",
+              "accuracy"
+            ],
+            "type": "string"
+          },
+          "playerId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "value": {
+            "description": "จำนวนข้อ (fastest/streak) หรือเปอร์เซ็นต์ (accuracy)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "kind",
+          "playerId",
+          "value"
+        ],
+        "type": "object"
+      },
+      "PodiumPlayerStatsView": {
+        "properties": {
+          "answered": {
+            "description": "ข้อที่ตอบจริง (ไม่นับหมดเวลา)",
+            "type": "number"
+          },
+          "correct": {
+            "type": "number"
+          },
+          "firstCorrect": {
+            "description": "จำนวนข้อที่ตอบถูกเร็วที่สุดในห้อง",
+            "type": "number"
+          },
+          "maxStreak": {
+            "description": "ตอบถูกติดกันยาวที่สุด",
+            "type": "number"
+          },
+          "playerId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "playerId",
+          "correct",
+          "answered",
+          "maxStreak",
+          "firstCorrect"
+        ],
+        "type": "object"
+      },
+      "PodiumResultsView": {
+        "properties": {
+          "awards": {
+            "items": {
+              "$ref": "#/components/schemas/PodiumAwardView"
+            },
+            "type": "array"
+          },
+          "players": {
+            "items": {
+              "$ref": "#/components/schemas/PodiumPlayerStatsView"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "players",
+          "awards"
+        ],
+        "type": "object"
+      },
+      "QuestionInputDto": {
+        "properties": {
+          "difficulty": {
+            "default": "MEDIUM",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "description": "id เดิม (ถ้ามี) — ไม่ส่ง = คำถามใหม่",
+            "format": "uuid",
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "ลิงก์รูปภาพ https:// เท่านั้น",
+            "nullable": true,
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/OptionInputDto"
+            },
+            "maxItems": 4,
+            "minItems": 2,
+            "type": "array"
+          },
+          "points": {
+            "description": "0 = ไม่คิดคะแนน",
+            "maximum": 5000,
+            "minimum": 0,
+            "type": "number"
+          },
+          "prompt": {
+            "description": "แบบร่างเว้นว่างได้ แต่เผยแพร่ต้องมี",
+            "maxLength": 300,
+            "type": "string"
+          },
+          "sourceBankItemId": {
+            "description": "คัดลอกมาจากคำถามในคลังข้อไหน",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "type": "array"
+          },
+          "timeLimit": {
+            "description": "วินาที",
+            "maximum": 300,
+            "minimum": 5,
+            "type": "number"
+          },
+          "type": {
+            "enum": [
+              "MULTIPLE_CHOICE",
+              "TRUE_FALSE"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "prompt",
+          "timeLimit",
+          "points",
+          "options"
+        ],
+        "type": "object"
+      },
+      "QuestionView": {
+        "properties": {
+          "difficulty": {
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "imageUrl": {
+            "nullable": true,
+            "type": "string"
+          },
+          "issues": {
+            "description": "ปัญหาที่ต้องแก้ก่อนเผยแพร่ (ว่าง = ครบ)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/OptionView"
+            },
+            "type": "array"
+          },
+          "order": {
+            "description": "ลำดับเริ่มที่ 1",
+            "type": "number"
+          },
+          "points": {
+            "type": "number"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "quizId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceBankItemId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "timeLimit": {
+            "type": "number"
+          },
+          "type": {
+            "enum": [
+              "MULTIPLE_CHOICE",
+              "TRUE_FALSE"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "quizId",
+          "order",
+          "type",
+          "prompt",
+          "timeLimit",
+          "points",
+          "tags",
+          "difficulty",
+          "options",
+          "issues"
+        ],
+        "type": "object"
+      },
+      "QuizSummaryView": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "incompleteCount": {
+            "description": "จำนวนข้อที่ยังไม่ครบ",
+            "type": "number"
+          },
+          "ownerCoreUserId": {
+            "type": "string"
+          },
+          "questionCount": {
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "ARCHIVED"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "totalTimeLimit": {
+            "description": "เวลาตอบรวมทุกข้อ (วินาที)",
+            "type": "number"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "ownerCoreUserId",
+          "title",
+          "description",
+          "status",
+          "version",
+          "questionCount",
+          "incompleteCount",
+          "totalTimeLimit",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "QuizView": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "incompleteCount": {
+            "description": "จำนวนข้อที่ยังไม่ครบ",
+            "type": "number"
+          },
+          "ownerCoreUserId": {
+            "type": "string"
+          },
+          "questionCount": {
+            "type": "number"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/QuestionView"
+            },
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "ARCHIVED"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "totalTimeLimit": {
+            "description": "เวลาตอบรวมทุกข้อ (วินาที)",
+            "type": "number"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "ownerCoreUserId",
+          "title",
+          "description",
+          "status",
+          "version",
+          "questionCount",
+          "incompleteCount",
+          "totalTimeLimit",
+          "createdAt",
+          "updatedAt",
+          "questions"
+        ],
+        "type": "object"
+      },
+      "ReportOptionView": {
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "isCorrect": {
+            "type": "boolean"
+          },
+          "optionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "optionId",
+          "text",
+          "isCorrect",
+          "count"
+        ],
+        "type": "object"
+      },
+      "ReportPlayerView": {
+        "properties": {
+          "accuracy": {
+            "description": "0–100",
+            "type": "number"
+          },
+          "avatarIndex": {
+            "description": "รูปโปรไฟล์ที่ผู้เล่นเลือก",
+            "type": "number"
+          },
+          "averageResponseMs": {
+            "description": "เวลาตอบเฉลี่ยของข้อที่ตอบ (มิลลิวินาที)",
+            "type": "number"
+          },
+          "coreUserId": {
+            "description": "null = ผู้เล่นที่เข้าด้วยบัตรเข้าห้อง (ไม่ได้ล็อกอิน)",
+            "nullable": true,
+            "type": "string"
+          },
+          "correct": {
+            "type": "number"
+          },
+          "incorrect": {
+            "type": "number"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "playerId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "rank": {
+            "type": "number"
+          },
+          "score": {
+            "type": "number"
+          },
+          "timeout": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "rank",
+          "playerId",
+          "nickname",
+          "avatarIndex",
+          "score",
+          "correct",
+          "incorrect",
+          "timeout",
+          "accuracy",
+          "averageResponseMs"
+        ],
+        "type": "object"
+      },
+      "ReportQuestionView": {
+        "properties": {
+          "correctAnswers": {
+            "type": "number"
+          },
+          "correctRate": {
+            "description": "0–100",
+            "type": "number"
+          },
+          "incorrectAnswers": {
+            "type": "number"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/ReportOptionView"
+            },
+            "type": "array"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "questionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "questionNumber": {
+            "description": "ลำดับเริ่มที่ 1",
+            "type": "number"
+          },
+          "timeLimit": {
+            "type": "number"
+          },
+          "timeoutAnswers": {
+            "type": "number"
+          },
+          "totalAnswers": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "questionNumber",
+          "questionId",
+          "type",
+          "prompt",
+          "timeLimit",
+          "totalAnswers",
+          "correctAnswers",
+          "incorrectAnswers",
+          "timeoutAnswers",
+          "correctRate",
+          "options"
+        ],
+        "type": "object"
+      },
+      "SubmitAnswerDto": {
+        "properties": {
+          "optionId": {
+            "description": "ตัวเลือกของคำถามข้อปัจจุบัน",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "optionId"
+        ],
+        "type": "object"
+      },
+      "UpdateBankItemDto": {
+        "properties": {
+          "difficulty": {
+            "default": "MEDIUM",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ],
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "ลิงก์รูปภาพ https:// เท่านั้น",
+            "nullable": true,
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/OptionInputDto"
+            },
+            "maxItems": 4,
+            "minItems": 2,
+            "type": "array"
+          },
+          "points": {
+            "description": "0 = ไม่คิดคะแนน",
+            "maximum": 5000,
+            "minimum": 0,
+            "type": "number"
+          },
+          "prompt": {
+            "description": "แบบร่างเว้นว่างได้ แต่เผยแพร่ต้องมี",
+            "maxLength": 300,
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "type": "array"
+          },
+          "timeLimit": {
+            "description": "วินาที",
+            "maximum": 300,
+            "minimum": 5,
+            "type": "number"
+          },
+          "type": {
+            "enum": [
+              "MULTIPLE_CHOICE",
+              "TRUE_FALSE"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateQuizDto": {
+        "properties": {
+          "description": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "questions": {
+            "description": "ชุดคำถามทั้งหมดตามลำดับ (แทนที่ของเดิมทั้งชุด)",
+            "items": {
+              "$ref": "#/components/schemas/QuestionInputDto"
+            },
+            "type": "array"
+          },
+          "status": {
+            "description": "PUBLISHED ได้เมื่อมีคำถามอย่างน้อย 1 ข้อและครบทุกข้อ (ไม่ครบ → 409)",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "ARCHIVED"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 150,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "csmju_quiz_access_token": {
+        "in": "cookie",
+        "name": "csmju_quiz_access_token",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "contact": {},
+    "description": "API ของระบบย่อย CSMJU Quiz — ทุก response ห่อด้วย { success, data[, meta] } หรือ { success: false, error }",
+    "title": "CSMJU Quiz API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "HealthController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Health check (public)",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/bank-items": {
+      "get": {
+        "operationId": "BankItemsController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "maxLength": 30,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "difficulty",
+            "required": false,
+            "schema": {
+              "enum": [
+                "EASY",
+                "MEDIUM",
+                "HARD"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BankItemView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List my question bank items",
+        "tags": [
+          "bank-items"
+        ]
+      },
+      "post": {
+        "operationId": "BankItemsController_create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBankItemDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankItemView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a complete question to my bank",
+        "tags": [
+          "bank-items"
+        ]
+      }
+    },
+    "/api/v1/bank-items/{id}": {
+      "delete": {
+        "operationId": "BankItemsController_remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete from bank (quiz copies are kept)",
+        "tags": [
+          "bank-items"
+        ]
+      },
+      "get": {
+        "operationId": "BankItemsController_findOne",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankItemView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "bank-items"
+        ]
+      },
+      "patch": {
+        "operationId": "BankItemsController_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBankItemDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankItemView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "bank-items"
+        ]
+      }
+    },
+    "/api/v1/game-histories": {
+      "get": {
+        "operationId": "GameHistoriesController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlayerGameResultView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Finished games I played with my account (newest first)",
+        "tags": [
+          "game-histories"
+        ]
+      }
+    },
+    "/api/v1/game-histories/{id}": {
+      "get": {
+        "operationId": "GameHistoriesController_findOne",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerGameReviewView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "My result in one finished game with per-question review",
+        "tags": [
+          "game-histories"
+        ]
+      }
+    },
+    "/api/v1/game-reports": {
+      "get": {
+        "operationId": "GameReportsController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "description": "เฉพาะเกมของแบบทดสอบนี้",
+            "in": "query",
+            "name": "quizId",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "ค้นในชื่อแบบทดสอบ",
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GameReportSummaryView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Finished games I hosted (ADMIN: all)",
+        "tags": [
+          "game-reports"
+        ]
+      }
+    },
+    "/api/v1/game-reports/{id}": {
+      "get": {
+        "operationId": "GameReportsController_findOne",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameReportView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Report of one finished game (players + per-question stats)",
+        "tags": [
+          "game-reports"
+        ]
+      }
+    },
+    "/api/v1/game-reports/{id}/players/{playerId}": {
+      "get": {
+        "operationId": "GameReportsController_findPlayer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerGameReviewView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "One player in a finished game I hosted: result + per-question answers",
+        "tags": [
+          "game-reports"
+        ]
+      }
+    },
+    "/api/v1/game-sessions": {
+      "get": {
+        "operationId": "GameSessionsController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "description": "ค้นห้องที่เปิดรอผู้เล่นด้วยรหัสเกม (ผู้เล่นใช้ค่านี้) · ไม่ส่ง = ห้องของฉัน (host)",
+            "in": "query",
+            "name": "gamePin",
+            "required": false,
+            "schema": {
+              "pattern": "^\\d{6}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "LOBBY",
+                "ACTIVE",
+                "FINISHED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/GameLobbyView"
+                      },
+                      {
+                        "$ref": "#/components/schemas/GameSessionSummaryView"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "มี ?gamePin= → GameLobbyView[] (0–1 ห้อง) · ไม่มี → GameSessionSummaryView[]"
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Host: my game rooms · Player: find a joinable room with ?gamePin=",
+        "tags": [
+          "game-sessions"
+        ]
+      },
+      "post": {
+        "operationId": "GameSessionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGameSessionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Open a game room from a published quiz",
+        "tags": [
+          "game-sessions"
+        ]
+      }
+    },
+    "/api/v1/game-sessions/{id}": {
+      "delete": {
+        "operationId": "GameSessionsController_remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Close and delete a game room (its report is deleted too)",
+        "tags": [
+          "game-sessions"
+        ]
+      },
+      "get": {
+        "operationId": "GameSessionsController_findOne",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Current game state (host or joined player view)",
+        "tags": [
+          "game-sessions"
+        ]
+      }
+    },
+    "/api/v1/game-sessions/{id}/advance": {
+      "post": {
+        "operationId": "GameSessionsController_advance",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Host skips ahead: close answers now → leaderboard → next question",
+        "tags": [
+          "game-sessions"
+        ]
+      }
+    },
+    "/api/v1/game-sessions/{id}/answers": {
+      "post": {
+        "operationId": "GameSessionsController_answer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitAnswerDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerReceiptView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit an answer to the current question (once per question)",
+        "tags": [
+          "game-sessions"
+        ]
+      }
+    },
+    "/api/v1/game-sessions/{id}/events": {
+      "get": {
+        "operationId": "GameSessionsController_events",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Live game state stream (text/event-stream)",
+        "tags": [
+          "game-sessions"
+        ]
+      }
+    },
+    "/api/v1/game-sessions/{id}/players": {
+      "post": {
+        "operationId": "GameSessionsController_join",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinGameDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameJoinView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Join a room in the lobby (re-joining returns the same player)",
+        "tags": [
+          "game-sessions"
+        ]
+      }
+    },
+    "/api/v1/game-sessions/{id}/players/{playerId}": {
+      "delete": {
+        "operationId": "GameSessionsController_removePlayer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Leave the lobby (player) or remove a player (host)",
+        "tags": [
+          "game-sessions"
+        ]
+      }
+    },
+    "/api/v1/game-sessions/{id}/start": {
+      "post": {
+        "operationId": "GameSessionsController_start",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Host starts the game (3-2-1 countdown, then question 1)",
+        "tags": [
+          "game-sessions"
+        ]
+      }
+    },
+    "/api/v1/guest-games": {
+      "get": {
+        "operationId": "GuestGamesController_lobby",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "description": "ค้นห้องที่เปิดรอผู้เล่นด้วยรหัสเกม (ผู้เล่นใช้ค่านี้) · ไม่ส่ง = ห้องของฉัน (host)",
+            "in": "query",
+            "name": "gamePin",
+            "required": false,
+            "schema": {
+              "pattern": "^\\d{6}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "LOBBY",
+                "ACTIVE",
+                "FINISHED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GameLobbyView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "GameLobbyView[] (0–1 ห้อง)"
+          }
+        },
+        "security": [
+          {
+            "quiz_room_pass": []
+          }
+        ],
+        "summary": "Guest: find the room waiting for players with ?gamePin=",
+        "tags": [
+          "guest-games"
+        ]
+      }
+    },
+    "/api/v1/guest-games/{id}": {
+      "get": {
+        "operationId": "GuestGamesController_findOne",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "quiz_room_pass": []
+          }
+        ],
+        "summary": "Guest: current game state (room pass required)",
+        "tags": [
+          "guest-games"
+        ]
+      }
+    },
+    "/api/v1/guest-games/{id}/answers": {
+      "post": {
+        "operationId": "GuestGamesController_answer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitAnswerDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerReceiptView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "quiz_room_pass": []
+          }
+        ],
+        "summary": "Guest: submit an answer to the current question",
+        "tags": [
+          "guest-games"
+        ]
+      }
+    },
+    "/api/v1/guest-games/{id}/events": {
+      "get": {
+        "operationId": "GuestGamesController_events",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "quiz_room_pass": []
+          }
+        ],
+        "summary": "Guest: live game state stream (text/event-stream)",
+        "tags": [
+          "guest-games"
+        ]
+      }
+    },
+    "/api/v1/guest-games/{id}/players": {
+      "post": {
+        "operationId": "GuestGamesController_join",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinGameDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameJoinView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "quiz_room_pass": []
+          }
+        ],
+        "summary": "Guest: join a room in the lobby — sets the room pass cookie (HttpOnly)",
+        "tags": [
+          "guest-games"
+        ]
+      }
+    },
+    "/api/v1/guest-games/{id}/players/{playerId}": {
+      "delete": {
+        "operationId": "GuestGamesController_leave",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "quiz_room_pass": []
+          }
+        ],
+        "summary": "Guest: leave the lobby (own player only)",
+        "tags": [
+          "guest-games"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "MeController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Current user from the verified Core Hub token",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/game-stats": {
+      "get": {
+        "operationId": "GameStatsController_stats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerStatsView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "My overall stats across finished games",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/quizzes": {
+      "get": {
+        "operationId": "QuizzesController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "description": "ACTIVE = แบบร่างและเผยแพร่แล้ว (ไม่รวมเก็บถาวร)",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "DRAFT",
+                "PUBLISHED",
+                "ARCHIVED",
+                "ACTIVE"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "ค้นในชื่อและรายละเอียด",
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "updatedAt",
+              "enum": [
+                "updatedAt",
+                "title",
+                "createdAt",
+                "questionCount"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QuizSummaryView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List quizzes (own; ADMIN sees all)",
+        "tags": [
+          "quizzes"
+        ]
+      },
+      "post": {
+        "operationId": "QuizzesController_create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuizDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a draft quiz",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/api/v1/quizzes/{id}": {
+      "delete": {
+        "operationId": "QuizzesController_remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a quiz (played games and reports are kept)",
+        "tags": [
+          "quizzes"
+        ]
+      },
+      "get": {
+        "operationId": "QuizzesController_findOne",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a quiz with its questions",
+        "tags": [
+          "quizzes"
+        ]
+      },
+      "patch": {
+        "operationId": "QuizzesController_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuizDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update title/description/status and/or replace all questions",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/api/v1/quizzes/{id}/copies": {
+      "post": {
+        "operationId": "QuizzesController_copy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Copy a quiz into a new draft owned by the caller",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    }
+  },
+  "servers": [],
+  "tags": []
+}

@@ -1,36 +1,50 @@
 # manifest ของระบบย่อย — CI และ conformance อ่านไฟล์นี้ไฟล์เดียว
 # schema: standards/schemas/subsystem.schema.json
+# ห้ามใส่บัญชีหรือรหัสผ่านในไฟล์นี้ (ถ้ามี test_accounts conformance จะตก) — บัญชีทดสอบอยู่ในไฟล์นอก repo
+# ที่ CONFORMANCE_ACCOUNTS_FILE ชี้ ดู standards/docs/conformance.md ข้อ 2.1
 
-name: csmju-quiz          # ต้องตรงกับทะเบียนใน Core Hub และกับ data.service ของ /api/health
-standards_version: "1.0.0"
-conformance_level: L3                 # L1 · L2 · L3 (ระบบที่มี UI ต้องถึง L3)
+name: csmju-quiz                       # ตรงกับทะเบียนใน Core Hub, SUBSYSTEM_ID และ data.service ของ /api/health
+standards_version: "1.7.0"             # ต้องตรงกับ .standards-version (CI อ่านจาก .standards-version · คีย์นี้ deprecated ตั้งแต่ 1.5.1)
+conformance_level: L3                  # มี UI จึงต้องถึง L3
+status: proposed
 
-base_url: http://localhost:3002       # URL ของระบบย่อยตอนรันเพื่อทดสอบ
-core_hub_url: http://localhost:3000
-callback_path: /auth/callback         # ต้องตรงกับ callback_url ที่ลงทะเบียนไว้
+# frontend เป็นประตูเดียวของระบบ: proxy /api/* และ /auth/login /auth/callback /auth/logout ไป backend (:3002)
+# base_url + callback_path = Callback URL ในทะเบียน Core Hub → http://localhost:3102/auth/callback (พอร์ต frontend)
+base_url: http://localhost:3102        # localhost ไม่ใช่ 127.0.0.1 · origin ที่หน้า next หลัง login ต้องอยู่ (L3-21)
+display_name: "CSMJU Quiz"             # ตรงกับ displayName ในทะเบียน · SUBSYSTEM_NAME ใน backend/.env
+repo: github.com/CSMJU2030/csmju-quiz
+core_hub_url: http://localhost:3000    # origin ของ Core Hub API (ไม่มี /api/v1) · server จริง https://csmju2030.jowave.com
+core_hub_web_url: http://127.0.0.1:3100  # เว็บที่ /auth/login ส่งเบราว์เซอร์ไป · ตรงกับ CORE_HUB_WEB_URL ใน backend/.env
+callback_path: /auth/callback
 
+# endpoint ที่เรียกได้โดยไม่มี token — conformance ยิงทุกตัวนี้แบบไม่มี token
 public_endpoints:
   - GET /api/health
+  - GET /auth/login
   - GET /auth/callback
+  - POST /auth/logout
+  # ผู้เล่นที่ไม่ล็อกอิน (PM อนุมัติ 2 ต.ค. 2569) — ตรวจ "บัตรเข้าห้อง" (คุกกี้ quiz_room_pass) แทน token
+  # ค้นห้องและเข้าร่วมจำกัดจำนวนครั้งต่อ IP (429 + Retry-After) · ปิดทั้งหมดได้ด้วย GUEST_PLAY_ENABLED=false
+  - GET /api/v1/guest-games
+  - POST /api/v1/guest-games/:id/players
+  - GET /api/v1/guest-games/:id
+  - GET /api/v1/guest-games/:id/events
+  - POST /api/v1/guest-games/:id/answers
+  - DELETE /api/v1/guest-games/:id/players/:playerId
 
-# conformance ใช้ probes ตรวจสัญญา API — ประกาศไม่ครบ = ขึ้น SKIP = ยังไม่ผ่าน
 probes:
-  collection: /api/v1/<resources>
-  not_found: /api/v1/<resources>/99999999-9999-4999-8999-999999999999
-  invalid_id: /api/v1/<resources>/not-a-uuid
+  collection: /api/v1/quizzes
+  not_found: /api/v1/quizzes/99999999-9999-4999-8999-999999999999
+  invalid_id: /api/v1/quizzes/not-a-uuid
   create:
-    path: /api/v1/<resources>
+    path: /api/v1/quizzes
     allowed_role: staff
     denied_role: student
     invalid_body:
-      someRequiredField: ""
+      title: ""
     valid_body:
-      someRequiredField: value
+      title: Conformance Probe
 
 owners:
   pl: "@csmju2030/pl-quiz"
   aie: "@csmju2030/aie-quiz"
-
-display_name: "CSMJU Quiz"
-repo: github.com/CSMJU2030/csmju-quiz
-status: proposed

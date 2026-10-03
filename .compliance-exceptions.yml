@@ -1,0 +1,12 @@
+# ข้อยกเว้นที่ PM/DevOps อนุมัติ 3 ต.ค. 2569 · บันทึกที่ csmju2030-standards#44 (ci-compliance-spec ข้อ 11.1)
+# แก้ได้เฉพาะเมื่อ DevOps approve · ทุกรายการต้องมี issue และ expires · ห้าม scope "*"
+
+version: 1
+
+exceptions:
+  - check: UI-01
+    scope: "frontend/src/components/game/answer-colors.module.css"
+    reason: "สีปุ่มตัวเลือกคำตอบ 4 สีในหน้าจอเกม — ทุกปุ่มมีไอคอนรูปทรงกำกับ · ตัวอักษรขาว contrast ผ่าน WCAG AA · เมนู ฟอร์ม ตาราง ใช้ชุดสีกลางตามเดิม"
+    approved_by: ["@Pimma783"]
+    issue: "csmju2030-standards#44"
+    expires: "2027-03-31"

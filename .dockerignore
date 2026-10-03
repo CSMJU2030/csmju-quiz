@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.next
+**/coverage
+**/src/generated
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+.git
+standards
