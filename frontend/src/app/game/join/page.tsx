@@ -17,6 +17,7 @@ import {
   ErrorIcon,
   ExpandMoreIcon,
   PersonIcon,
+  SchoolIcon,
   SportsEsportsIcon,
 } from "@/components/icons";
 import { FormField, RequiredNote } from "@/components/shared/form-field";
@@ -194,21 +195,27 @@ function JoinInner() {
     window.setTimeout(() => document.getElementById("join-pin")?.focus(), 0);
   };
 
-  // สลับช่องทางโดยถือรหัสเดิมไปด้วย
+  // สองช่องทางวางคู่กันบนสุดของฟอร์ม ขนาดเท่ากัน — สลับแล้วถือรหัสเดิมไปด้วย
+  // (เดิมปุ่มบัญชีอยู่ท้ายหน้า ผู้เล่นที่มีบัญชีมักกด "เข้าร่วมเกม" ไปก่อนจึงถูกนับเป็นไม่ล็อกอิน)
   const pinQuery = pin.length === 6 ? `?pin=${pin}` : "";
-  const otherChannel = guest
-    ? {
-        href: `/game/join${pinQuery}`,
-        title: "มีบัญชี MJU?",
-        desc: "เข้าร่วมด้วยบัญชีเพื่อเก็บประวัติการเล่นและทบทวนคำตอบย้อนหลังได้ และกลับเข้าห้องเดิมได้จากทุกเครื่อง",
-        action: "เข้าร่วมด้วยบัญชี MJU",
-      }
-    : {
-        href: `/play${pinQuery}`,
-        title: "เล่นโดยไม่ใช้บัญชี",
-        desc: "ใช้ชื่อเล่นอย่างเดียว ไม่เก็บประวัติของคุณ ผลการเล่นอยู่ในรายงานของผู้เปิดห้องเท่านั้น",
-        action: "เล่นแบบไม่ล็อกอิน",
-      };
+  const channels = [
+    {
+      key: "member",
+      href: `/game/join${pinQuery}`,
+      title: "เล่นด้วยบัญชี MJU",
+      desc: "เก็บประวัติและทบทวนคำตอบได้",
+      Icon: SchoolIcon,
+      active: !guest,
+    },
+    {
+      key: "guest",
+      href: `/play${pinQuery}`,
+      title: "เล่นแบบไม่ล็อกอิน",
+      desc: "ใช้ชื่อเล่น ไม่เก็บประวัติ",
+      Icon: PersonIcon,
+      active: guest,
+    },
+  ] as const;
 
   const randomize = () => {
     const next = randomAvatarIndex();
@@ -335,6 +342,47 @@ function JoinInner() {
         }}
         className={`${cardClass} relative mx-3 -mt-10 space-y-6 p-6 shadow-md fade-slide-up stagger-1`}
       >
+        <nav aria-label="วิธีเข้าร่วม" className="grid grid-cols-2 gap-3">
+          {channels.map(({ key, href, title, desc, Icon, active }) => {
+            const body = (
+              <>
+                <span className="flex items-center gap-2 text-label-md">
+                  {active ? (
+                    <CheckIcon className="h-5 w-5 shrink-0" />
+                  ) : (
+                    <Icon className="h-5 w-5 shrink-0" />
+                  )}
+                  {title}
+                </span>
+                <span
+                  className={`text-label-sm ${active ? "text-on-primary/80" : "text-on-surface-variant"}`}
+                >
+                  {desc}
+                </span>
+              </>
+            );
+            const box =
+              "flex min-h-24 flex-col items-start justify-center gap-1 rounded-xl border-2 px-4 py-3 text-left transition-colors";
+            return active ? (
+              <div
+                key={key}
+                aria-current="true"
+                className={`${box} border-primary bg-primary text-on-primary`}
+              >
+                {body}
+              </div>
+            ) : (
+              <Link
+                key={key}
+                href={href}
+                className={`${box} border-outline-variant bg-surface text-on-surface hover:border-primary hover:bg-primary-container/10`}
+              >
+                {body}
+              </Link>
+            );
+          })}
+        </nav>
+
         {signedInAs && (
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-surface px-4 py-2 text-body-md text-on-surface-variant">
             <span className="min-w-0 break-all">
@@ -524,18 +572,6 @@ function JoinInner() {
         </div>
       </form>
       {signedInAs && <form id="join-switch-account" method="post" action={logoutUrl()} hidden />}
-
-      {/* อีกช่องทางหนึ่ง — ถือรหัสเดิมไปด้วย */}
-      <div className="mx-3 mt-4 flex flex-col items-center gap-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-5 py-5 text-center fade-slide-up stagger-2">
-        <PersonIcon className="h-6 w-6 text-on-surface-variant" />
-        <div>
-          <p className="text-label-md text-on-surface">{otherChannel.title}</p>
-          <p className="mt-1 text-body-md text-on-surface-variant">{otherChannel.desc}</p>
-        </div>
-        <Link href={otherChannel.href} className={secondaryButtonClass}>
-          {otherChannel.action}
-        </Link>
-      </div>
     </div>
   );
 }
