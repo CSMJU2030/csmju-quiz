@@ -25,7 +25,8 @@ pnpm dev:backend                                # http://localhost:3002
 pnpm dev:frontend                               # http://localhost:3102
 ```
 
-ต้องมี Core Hub รันอยู่ที่ `http://localhost:3000` (API · JWKS) และ `http://127.0.0.1:3100` (หน้าเว็บ)
+เว็บจริง: **https://csmju-quiz.jowave.com** · Callback URL ในทะเบียน Core Hub = `https://csmju-quiz.jowave.com/auth/callback`
+(ทุกระบบใช้ subdomain ของตัวเอง ไม่ใช้พอร์ต) · Core Hub = `https://csmju2030.jowave.com`
 ขั้นตอนลงทะเบียนระบบย่อยอยู่ใน [`backend/README.md`](backend/README.md)
 
 ทางเลือก: `docker compose up -d --build` (ตั้ง `POSTGRES_PASSWORD` ใน `.env` ที่รากก่อน)
