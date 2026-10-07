@@ -9,12 +9,13 @@ conformance_level: L3                  # มี UI จึงต้องถึ�
 status: proposed
 
 # frontend เป็นประตูเดียวของระบบ: proxy /api/* และ /auth/login /auth/callback /auth/logout ไป backend (:3002)
-# base_url + callback_path = Callback URL ในทะเบียน Core Hub → http://localhost:3102/auth/callback (พอร์ต frontend)
-base_url: http://localhost:3102        # localhost ไม่ใช่ 127.0.0.1 · origin ที่หน้า next หลัง login ต้องอยู่ (L3-21)
+# base_url + callback_path = Callback URL ในทะเบียน Core Hub → https://csmju-quiz.jowave.com/auth/callback
+# ระบบใช้ subdomain ของตัวเองบน jowave.com (deployment.md ข้อ 2) — ไม่ใช้พอร์ตแล้ว
+base_url: https://csmju-quiz.jowave.com   # origin ที่หน้า next หลัง login ต้องอยู่ (L3-21) · = FRONTEND_URL บน server
 display_name: "CSMJU Quiz"             # ตรงกับ displayName ในทะเบียน · SUBSYSTEM_NAME ใน backend/.env
 repo: github.com/CSMJU2030/csmju-quiz
-core_hub_url: http://localhost:3000    # origin ของ Core Hub API (ไม่มี /api/v1) · server จริง https://csmju2030.jowave.com
-core_hub_web_url: http://127.0.0.1:3100  # เว็บที่ /auth/login ส่งเบราว์เซอร์ไป · ตรงกับ CORE_HUB_WEB_URL ใน backend/.env
+core_hub_url: https://csmju2030.jowave.com       # origin ของ Core Hub API (ไม่มี /api/v1)
+core_hub_web_url: https://csmju2030.jowave.com   # เว็บที่ /auth/login ส่งเบราว์เซอร์ไป · ตรงกับ CORE_HUB_WEB_URL ของ api
 callback_path: /auth/callback
 
 # endpoint ที่เรียกได้โดยไม่มี token — conformance ยิงทุกตัวนี้แบบไม่มี token
@@ -39,7 +40,7 @@ probes:
   create:
     path: /api/v1/quizzes
     allowed_role: staff
-    denied_role: student
+    denied_role: guest                    # Core Hub จริง: role ที่มีบัญชีรหัสผ่าน (conformance.md ข้อ 2.2)
     invalid_body:
       title: ""
     valid_body:
