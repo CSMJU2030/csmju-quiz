@@ -135,6 +135,27 @@ export function remainingMs(state: GameState | null, now: number): number {
   return Math.min(total, Math.max(0, end - now));
 }
 
+/** server ปิดรับคำตอบหลังหมดเวลาที่เห็นได้อีกเล็กน้อย — ตรงกับ backend TIMING.LATE_GRACE_MS */
+const LATE_GRACE_MS = 500;
+
+/**
+ * เวลาที่ server จะเปลี่ยนเฟสถัดไปเอง (epoch ms ตามนาฬิกา server) — ไม่มีกำหนด = null
+ * QUESTION: ทุกคนตอบครบ → countdownEndsAt · ไม่ครบ → หมดเวลา + LATE_GRACE · RESULT / LEADERBOARD: phaseEndsAt
+ */
+export function nextPhaseAt(state: GameState | null): number | null {
+  if (!state || state.status !== "ACTIVE") return null;
+  if (state.phase === "QUESTION") {
+    const start = ms(state.questionStartedAt);
+    const lock = ms(state.countdownEndsAt);
+    const limit = state.question?.timeLimit;
+    const deadline = start !== null && limit ? start + limit * 1000 + LATE_GRACE_MS : null;
+    if (lock !== null) return deadline === null ? lock : Math.min(lock, deadline);
+    return deadline;
+  }
+  if (state.phase === "RESULT" || state.phase === "LEADERBOARD") return ms(state.phaseEndsAt);
+  return null;
+}
+
 /** ก่อนเริ่มข้อ (นับ 3-2-1 ก่อนข้อแรก) — มากกว่า 0 ระหว่างรอ */
 export function startDelayMs(state: GameState | null, now: number): number {
   const start = ms(state?.questionStartedAt);
@@ -212,6 +233,9 @@ export function isFatalLoadError(error: GameLoadError | null): boolean {
 
 /** ช่วงเวลาดึงสถานะซ้ำเมื่อเบราว์เซอร์ไม่มี EventSource หรือ stream หลุด */
 const FALLBACK_POLL_MS = 3000;
+
+/** รอ event หลังถึงเวลาเปลี่ยนเฟสได้นานเท่านี้ก่อนดึงสถานะเอง */
+const PHASE_REFRESH_SLACK_MS = 400;
 
 function toLoadError(err: unknown): GameLoadError {
   if (err instanceof ApiError && err.code === "UNAUTHORIZED")
@@ -332,6 +356,18 @@ export function useGameState(sessionId: string) {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [sessionId, refresh, accept, channel]);
+
+  // กันหน้าจอค้างหลังนับถอยหลังถึง 0: ถ้าเลยเวลาเปลี่ยนเฟสแล้วยังไม่ได้ event "state" ใหม่
+  // (เช่น proxy กัก stream ไว้) ให้ดึงสถานะเองหนึ่งครั้ง — ได้ event ทันเวลา effect นี้ถูกยกเลิกก่อน
+  useEffect(() => {
+    const at = nextPhaseAt(state);
+    if (at === null) return;
+    const wait = Math.max(0, at - (Date.now() + offsetRef.current)) + PHASE_REFRESH_SLACK_MS;
+    const timer = window.setTimeout(() => {
+      if (!fatalRef.current) void refresh();
+    }, wait);
+    return () => window.clearTimeout(timer);
+  }, [state, refresh]);
 
   /** เวลาปัจจุบันตามนาฬิกาของ server */
   const serverNow = useCallback(() => Date.now() + offsetRef.current, []);

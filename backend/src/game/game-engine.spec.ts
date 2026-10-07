@@ -122,3 +122,46 @@ describe('GameEngine.closeQuestion', () => {
     expect(hub.emit).toHaveBeenCalledWith('g');
   });
 });
+
+describe('GameEngine.schedule — เวลาปิดรับคำตอบ', () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  async function closeDelay(row: Record<string, unknown>) {
+    const { engine } = engineWith({
+      gameSession: { findUnique: jest.fn().mockResolvedValue(row) },
+    });
+    const spy = jest.spyOn(global, 'setTimeout');
+    await engine.schedule('g');
+    const delay = spy.mock.calls[0][1] as number;
+    engine.onModuleDestroy();
+    return delay;
+  }
+
+  it('ทุกคนตอบครบ → ปิดตรงเวลานับถอยหลัง ไม่รอ LATE_GRACE', async () => {
+    const now = Date.now();
+    const delay = await closeDelay({
+      status: 'ACTIVE',
+      phase: 'QUESTION',
+      currentQuestionIndex: 0,
+      questionStartedAt: new Date(now),
+      countdownEndsAt: new Date(now + TIMING.LOCK_WARNING_MS),
+      quizSnapshot: snapshot,
+    });
+    expect(delay).toBeLessThanOrEqual(TIMING.LOCK_WARNING_MS);
+    expect(delay).toBeGreaterThan(TIMING.LOCK_WARNING_MS - 200);
+  });
+
+  it('ยังตอบไม่ครบ → ปิดหลังหมดเวลา + LATE_GRACE', async () => {
+    const now = Date.now();
+    const delay = await closeDelay({
+      status: 'ACTIVE',
+      phase: 'QUESTION',
+      currentQuestionIndex: 0,
+      questionStartedAt: new Date(now),
+      countdownEndsAt: null,
+      quizSnapshot: snapshot,
+    });
+    expect(delay).toBeGreaterThan(10_000 + TIMING.LATE_GRACE_MS - 200);
+    expect(delay).toBeLessThanOrEqual(10_000 + TIMING.LATE_GRACE_MS);
+  });
+});

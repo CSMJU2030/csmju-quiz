@@ -5,6 +5,7 @@ import {
   countdownValue,
   gameErrorMessage,
   isLastQuestion,
+  nextPhaseAt,
   remainingMs,
   startDelayMs,
   toQuestionOptions,
@@ -109,5 +110,22 @@ describe("game-api helpers", () => {
     expect(gameErrorMessage(new ApiError("TOO_MANY_REQUESTS", "", 429))).toBe(
       "มีการขอเข้าห้องถี่เกินไป กรุณารอสักครู่แล้วลองใหม่",
     );
+  });
+});
+
+describe("nextPhaseAt — เวลาที่ server เปลี่ยนเฟสเอง", () => {
+  it("กำลังตอบ: หมดเวลา + 500ms (server รับคำตอบที่มาช้าเล็กน้อย)", () => {
+    expect(nextPhaseAt(state({}))).toBe(T0 + 20_000 + 500);
+  });
+  it("ทุกคนตอบครบ: เวลานับถอยหลังปิดรับคำตอบ (ไม่บวกเพิ่ม)", () => {
+    expect(nextPhaseAt(state({ countdownEndsAt: at(8_000) }))).toBe(T0 + 8_000);
+  });
+  it("เฉลย / อันดับ: phaseEndsAt", () => {
+    expect(nextPhaseAt(state({ phase: "RESULT", phaseEndsAt: at(5_000) }))).toBe(T0 + 5_000);
+    expect(nextPhaseAt(state({ phase: "LEADERBOARD", phaseEndsAt: at(8_000) }))).toBe(T0 + 8_000);
+  });
+  it("ห้องรอ / จบเกม: ไม่มีกำหนด", () => {
+    expect(nextPhaseAt(state({ phase: "LOBBY", status: "LOBBY" }))).toBeNull();
+    expect(nextPhaseAt(state({ phase: "PODIUM", status: "FINISHED" }))).toBeNull();
   });
 });
