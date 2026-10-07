@@ -6,7 +6,7 @@
 |---|---|---|
 | `backend/` | NestJS 11 · Prisma 7.9.1 · PostgreSQL 16 | [`backend/README.md`](backend/README.md) — API · ลงทะเบียนกับ Core Hub · role mapping |
 | `frontend/` | Next.js 16 (App Router) · React 19 · Tailwind v4 | [`frontend/README.md`](frontend/README.md) |
-| `standards/` | submodule `csmju2030-standards` (อ่านอย่างเดียว) | เวอร์ชันใน [`.standards-version`](.standards-version) = **1.0.6** (สาย 1.0.x · สัญญา SSO 1.0) |
+| `standards/` | submodule `csmju2030-standards` (อ่านอย่างเดียว) | เวอร์ชันใน [`.standards-version`](.standards-version) = **1.8.4** |
 
 ผู้ใช้เข้าผ่าน **Core Hub SSO** เท่านั้น — ไม่มีหน้า login และไม่มีตาราง users ของตัวเอง
 
@@ -49,7 +49,7 @@ node standards/conformance/run.js               # runtime — ต้องรั
 ```text
 csmju-quiz/
 ├── .github/            ci.yml · CODEOWNERS — มาจาก new-subsystem.sh (DevOps เท่านั้น)
-├── .standards-version  1.0.6
+├── .standards-version  1.8.4
 ├── standards/          submodule
 ├── subsystem.yaml      manifest ที่ CI และ conformance อ่าน
 ├── pnpm-workspace.yaml · package.json · pnpm-lock.yaml
