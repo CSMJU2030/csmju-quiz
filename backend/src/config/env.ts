@@ -7,6 +7,8 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3002),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  /** จำนวน connection สูงสุดของระบบนี้ (deployment.md ข้อ 4.1) · server ตั้ง 5 */
+  DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(20).default(5),
 
   CORE_HUB_URL: url,
   CORE_HUB_JWKS_URL: url,

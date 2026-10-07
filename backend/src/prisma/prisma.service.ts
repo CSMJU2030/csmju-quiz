@@ -7,7 +7,13 @@ import { PrismaClient } from '../generated/prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(config: AppConfig) {
-    super({ adapter: new PrismaPg({ connectionString: config.get('DATABASE_URL') }) });
+    // จำกัด connection ต่อระบบ (deployment.md ข้อ 4.1) — ฐานกลางบน server ใช้ร่วมกันหลายระบบ
+    super({
+      adapter: new PrismaPg({
+        connectionString: config.get('DATABASE_URL'),
+        max: config.get('DATABASE_POOL_MAX'),
+      }),
+    });
   }
 
   async onModuleInit() {

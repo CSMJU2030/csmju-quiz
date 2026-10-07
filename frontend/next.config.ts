@@ -12,6 +12,8 @@ const workspaceRoot = path.join(__dirname, "..");
 const BACKEND_URL = (process.env.BACKEND_URL ?? "http://127.0.0.1:3002").replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+  // deployment.md ข้อ 3 (DEP-04): image ใช้แค่ server ที่ trace แล้วใน .next/standalone
+  output: "standalone",
   turbopack: { root: workspaceRoot },
   outputFileTracingRoot: workspaceRoot,
   // SSE (/api/v1/.../events) ต้องไม่ถูกบีบอัด — gzip ของ Next จะกักข้อมูลไว้จนเต็ม buffer
