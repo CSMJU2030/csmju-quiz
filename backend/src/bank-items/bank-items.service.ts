@@ -1,3 +1,4 @@
+import { displayImageUrl, storedImage } from '../images/image-url';
 import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import type { CoreHubIdentity } from '../auth/core-hub-identity';
@@ -38,7 +39,8 @@ function toView(item: BankItem): BankItemView {
     ownerCoreUserId: item.ownerCoreUserId,
     type: item.type,
     prompt: item.prompt,
-    imageUrl: item.imageUrl,
+    imageUrl: displayImageUrl(item),
+    imageId: item.imageId,
     timeLimit: item.timeLimit,
     points: item.points,
     tags: item.tags,
@@ -90,7 +92,10 @@ export class BankItemsService {
     const merged: QuestionContentDto = {
       type: dto.type ?? current.type,
       prompt: dto.prompt ?? current.prompt,
-      imageUrl: dto.imageUrl !== undefined ? dto.imageUrl : current.imageUrl,
+      // ส่งรูปแบบใดแบบหนึ่งมา = แทนรูปเดิม · ไม่ส่งทั้งคู่ = คงรูปเดิม
+      ...(dto.imageId !== undefined || dto.imageUrl !== undefined
+        ? { imageId: dto.imageId ?? null, imageUrl: dto.imageUrl ?? null }
+        : { imageId: current.imageId, imageUrl: current.imageUrl }),
       timeLimit: dto.timeLimit ?? current.timeLimit,
       points: dto.points ?? current.points,
       tags: dto.tags ?? current.tags,
@@ -130,7 +135,7 @@ export class BankItemsService {
     return {
       type: dto.type,
       prompt: dto.prompt,
-      imageUrl: dto.imageUrl ?? null,
+      ...storedImage(dto),
       timeLimit: dto.timeLimit,
       points: dto.points,
       tags: normalizeTags(dto.tags),

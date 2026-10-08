@@ -23,8 +23,10 @@ export interface Question {
   timeLimit: number;
   points: number;
   options: QuestionOption[];
-  /** ภาพประกอบคำถาม (URL) */
+  /** ภาพประกอบคำถาม (URL สำหรับแสดง) */
   image?: string;
+  /** id ของรูปที่อัปโหลดผ่าน Core Hub — มีค่า = image เป็นไฟล์ของ Core Hub (ไม่ใช่ลิงก์ที่วางเอง) */
+  imageId?: string;
   tags?: string[];
   difficulty?: Difficulty;
   /** id ของคำถามในคลังที่คัดลอกมา (ถ้ามี) — ใช้แสดงที่มา ไม่ได้ผูกข้อมูลกัน */

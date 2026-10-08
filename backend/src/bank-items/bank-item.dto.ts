@@ -39,7 +39,13 @@ export class BankItemView {
   @ApiProperty() ownerCoreUserId: string;
   @ApiProperty({ enum: ['MULTIPLE_CHOICE', 'TRUE_FALSE'] }) type: string;
   @ApiProperty() prompt: string;
-  @ApiPropertyOptional({ type: String, nullable: true }) imageUrl: string | null;
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'URL สำหรับแสดงรูป (รูปที่อัปโหลด = ไฟล์จาก Core Hub)',
+  })
+  imageUrl: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) imageId: string | null;
   @ApiProperty() timeLimit: number;
   @ApiProperty() points: number;
   @ApiProperty({ type: [String] }) tags: string[];
