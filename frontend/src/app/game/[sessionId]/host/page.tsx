@@ -28,6 +28,7 @@ import {
   staggerClass,
 } from "@/components/shared/ui";
 import { formatNumber } from "@/lib/format";
+import { CountUp, RankRow } from "@/components/game/live-motion";
 import { PodiumView } from "@/components/game/podium-view";
 import { PlayerAvatar, PlayerIdentity } from "@/components/game/player-avatar";
 import type { GamePlayerView } from "@/lib/api-types";
@@ -52,6 +53,9 @@ import { AnswerBadge } from "@/components/game/question-view";
 
 // หน้าจอผู้ดำเนินเกม — เฟสและเวลาทั้งหมด backend เป็นผู้เลื่อน (ปิดแท็บนี้เกมก็ยังเดินต่อ)
 // ปุ่มบนหน้านี้แค่สั่ง "เริ่ม" และ "ข้าม" (advance) ไปเฟสถัดไปก่อนหมดเวลา
+/** ระยะห่างระหว่างแถวอันดับ (h-20 = 80px + space-y-3 = 12px) */
+const HOST_ROW_PITCH = 92;
+
 export default function HostPage() {
   const params = useParams();
 
@@ -93,6 +97,20 @@ export default function HostPage() {
   const secondsLeft = phase === "QUESTION" ? Math.ceil(remainingMs / 1000) : 0;
 
   const players: GamePlayerView[] = game?.players ?? [];
+
+  // อันดับและคะแนนก่อนเริ่มข้อ — ใช้เลื่อนแถวและนับคะแนนขึ้นตอนแสดงอันดับ
+  const [round, setRound] = useState<{
+    index: number;
+    prevOrder: string[];
+    prevScores: Record<string, number>;
+  }>({ index: -1, prevOrder: [], prevScores: {} });
+  if (phase === "QUESTION" && round.index !== questionIndex) {
+    setRound({
+      index: questionIndex,
+      prevOrder: [...players].sort((a, b) => a.rank - b.rank).map((p) => p.id),
+      prevScores: Object.fromEntries(players.map((p) => [p.id, p.score])),
+    });
+  }
   const answeredCount = game?.answeredCount ?? 0;
   const everyoneAnswered = players.length > 0 && answeredCount >= players.length;
   const distribution = game?.distribution ?? {};
@@ -725,10 +743,15 @@ export default function HostPage() {
           <section className="mt-6 rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-sm sm:p-7">
             <div className="space-y-3">
               {players.slice(0, 5).map((player, index) => {
+                const prev = round.prevOrder.indexOf(player.id);
                 return (
-                  <div
+                  <RankRow
+                    as="div"
                     key={player.id}
-                    className={`flex items-center gap-4 rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-4 fade-slide-up ${staggerClass(index)}`}
+                    index={index}
+                    prevIndex={prev >= 0 && prev < 5 ? prev : null}
+                    pitch={HOST_ROW_PITCH}
+                    className="flex h-20 items-center gap-4 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4"
                   >
                     <div
                       className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-label-md font-bold ${rankStyle(player.rank)}`}
@@ -742,13 +765,16 @@ export default function HostPage() {
                       size="md"
                       highlight={player.rank === 1}
                       nameClassName="text-label-md font-bold text-on-surface sm:text-body-md"
-                      className="flex-1"
+                      className="min-w-0 flex-1"
                     />
 
-                    <p className="shrink-0 font-display text-headline-md text-primary-container tabular-nums">
-                      {formatNumber(player.score)}
-                    </p>
-                  </div>
+                    <CountUp
+                      to={player.score}
+                      from={round.prevScores[player.id] ?? player.score}
+                      format={formatNumber}
+                      className="shrink-0 font-display text-headline-md text-primary-container tabular-nums"
+                    />
+                  </RankRow>
                 );
               })}
             </div>

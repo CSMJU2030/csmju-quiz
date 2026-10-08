@@ -1,3 +1,4 @@
+import { storedImage } from '../images/image-url';
 import { Injectable } from '@nestjs/common';
 import { Errors } from '../common/app-exception';
 import { Paginated } from '../common/envelope';
@@ -130,6 +131,7 @@ export class QuizzesService {
             type: q.type,
             prompt: q.prompt,
             imageUrl: q.imageUrl,
+            imageId: q.imageId,
             timeLimit: q.timeLimit,
             points: q.points,
             tags: q.tags,
@@ -213,7 +215,7 @@ export class QuizzesService {
           position: index + 1,
           type: q.type,
           prompt: q.prompt,
-          imageUrl: q.imageUrl ?? null,
+          ...storedImage(q),
           timeLimit: q.timeLimit,
           points: q.points,
           tags: normalizeTags(q.tags),

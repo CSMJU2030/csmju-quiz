@@ -13,7 +13,7 @@ import {
   normalizeContent,
   type QuestionContent,
 } from "@/lib/question-model";
-import { getAllQuizzes } from "@/lib/quiz-store";
+import { getAllQuizzes, imageBody } from "@/lib/quiz-store";
 import { newId } from "@/lib/utils";
 import type { Difficulty, Question } from "@/types/quiz";
 
@@ -42,6 +42,7 @@ function toBankItem(view: BankItemView): BankItem {
     timeLimit: view.timeLimit,
     points: view.points,
     image: view.imageUrl ?? undefined,
+    imageId: view.imageId ?? undefined,
     tags: view.tags,
     difficulty: view.difficulty as Difficulty,
     usedCount: view.usedCount,
@@ -55,7 +56,7 @@ function toBody(content: QuestionContent): CreateBankItemBody {
   return {
     type: clean.type === "TRUE_FALSE" ? "TRUE_FALSE" : "MULTIPLE_CHOICE",
     prompt: clean.prompt,
-    imageUrl: clean.image ?? null,
+    ...imageBody(clean),
     timeLimit: clean.timeLimit,
     points: clean.points,
     tags: clean.tags ?? [],

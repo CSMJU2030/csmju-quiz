@@ -25,6 +25,7 @@ export function toQuestion(view: QuestionView): Question {
     points: view.points,
     options: view.options.map((o) => ({ id: o.id, text: o.text, isCorrect: o.isCorrect })),
     image: view.imageUrl ?? undefined,
+    imageId: view.imageId ?? undefined,
     tags: view.tags,
     difficulty: view.difficulty,
     sourceBankItemId: view.sourceBankItemId ?? undefined,
@@ -45,13 +46,21 @@ export function toQuiz(view: QuizView): Quiz {
   };
 }
 
+/** รูปที่อัปโหลดส่งเป็น imageId · ลิงก์ที่วางเองส่งเป็น imageUrl */
+export function imageBody(q: { image?: string; imageId?: string }) {
+  const url = q.image?.trim() || null;
+  return q.imageId && url
+    ? { imageId: q.imageId, imageUrl: null }
+    : { imageId: null, imageUrl: url };
+}
+
 /** คำถามที่ส่งให้ backend — ส่งเฉพาะประเภทที่ backend รองรับ (ปรนัย · ถูก/ผิด) */
 export function toQuestionInput(q: Question): QuestionInputBody {
   return {
     id: q.id || undefined,
     type: q.type === "TRUE_FALSE" ? "TRUE_FALSE" : "MULTIPLE_CHOICE",
     prompt: q.prompt,
-    imageUrl: q.image?.trim() || null,
+    ...imageBody(q),
     timeLimit: q.timeLimit,
     points: q.points,
     tags: q.tags ?? [],

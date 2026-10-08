@@ -381,6 +381,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a question image to the Core Hub image service
+         * @description JPEG · PNG · WebP ไม่เกิน 5 MB · รูปเปิดดูได้โดยไม่ต้องล็อกอิน — ห้ามใช้กับรูปที่มีข้อมูลส่วนบุคคล
+         */
+        post: operations["ImagesController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -514,6 +534,9 @@ export interface components {
             difficulty: "EASY" | "MEDIUM" | "HARD";
             /** Format: uuid */
             id: string;
+            /** Format: uuid */
+            imageId?: string | null;
+            /** @description URL สำหรับแสดงรูป (รูปที่อัปโหลด = ไฟล์จาก Core Hub) */
             imageUrl?: string | null;
             options: components["schemas"]["OptionView"][];
             ownerCoreUserId: string;
@@ -534,6 +557,11 @@ export interface components {
              * @enum {string}
              */
             difficulty: "EASY" | "MEDIUM" | "HARD";
+            /**
+             * Format: uuid
+             * @description id ของรูปจาก POST /api/v1/images (มีค่าแล้วไม่ใช้ imageUrl)
+             */
+            imageId?: string | null;
             /** @description ลิงก์รูปภาพ https:// เท่านั้น */
             imageUrl?: string | null;
             options: components["schemas"]["OptionInputDto"][];
@@ -910,6 +938,11 @@ export interface components {
              * @description id เดิม (ถ้ามี) — ไม่ส่ง = คำถามใหม่
              */
             id?: string;
+            /**
+             * Format: uuid
+             * @description id ของรูปจาก POST /api/v1/images (มีค่าแล้วไม่ใช้ imageUrl)
+             */
+            imageId?: string | null;
             /** @description ลิงก์รูปภาพ https:// เท่านั้น */
             imageUrl?: string | null;
             options: components["schemas"]["OptionInputDto"][];
@@ -933,6 +966,9 @@ export interface components {
             difficulty: "EASY" | "MEDIUM" | "HARD";
             /** Format: uuid */
             id: string;
+            /** Format: uuid */
+            imageId?: string | null;
+            /** @description URL สำหรับแสดงรูป (รูปที่อัปโหลด = ไฟล์จาก Core Hub) */
             imageUrl?: string | null;
             /** @description ปัญหาที่ต้องแก้ก่อนเผยแพร่ (ว่าง = ครบ) */
             issues: string[];
@@ -1043,6 +1079,11 @@ export interface components {
              * @enum {string}
              */
             difficulty: "EASY" | "MEDIUM" | "HARD";
+            /**
+             * Format: uuid
+             * @description id ของรูปจาก POST /api/v1/images (มีค่าแล้วไม่ใช้ imageUrl)
+             */
+            imageId?: string | null;
             /** @description ลิงก์รูปภาพ https:// เท่านั้น */
             imageUrl?: string | null;
             options?: components["schemas"]["OptionInputDto"][];
@@ -1066,6 +1107,15 @@ export interface components {
              */
             status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
             title?: string;
+        };
+        UploadedImageView: {
+            /**
+             * Format: uuid
+             * @description ส่งเป็น imageId ของคำถาม
+             */
+            id: string;
+            /** @description URL สาธารณะของไฟล์รูปบน Core Hub (ใช้แสดงตัวอย่าง) */
+            url: string;
         };
     };
     responses: never;
@@ -1671,6 +1721,32 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    ImagesController_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadedImageView"];
+                };
             };
         };
     };

@@ -1,6 +1,7 @@
 // สำเนาแบบทดสอบ ณ ตอนเปิดห้อง — เกมและรายงานอ่านจากสำเนานี้เท่านั้น
 import { randomInt } from 'node:crypto';
 import type { Prisma } from '../generated/prisma/client';
+import { displayImageUrl } from '../images/image-url';
 
 export interface SnapshotOption {
   id: string;
@@ -49,6 +50,7 @@ export function buildSnapshot(
       type: string;
       prompt: string;
       imageUrl: string | null;
+      imageId?: string | null;
       timeLimit: number;
       points: number;
       options: SnapshotOption[];
@@ -60,7 +62,8 @@ export function buildSnapshot(
     id: q.id,
     type: q.type,
     prompt: q.prompt,
-    imageUrl: q.imageUrl,
+    // เก็บ URL ที่ใช้แสดงไว้ในสำเนา — เกมและรายงานไม่ต้องรู้ว่ารูปมาจากไหน
+    imageUrl: displayImageUrl(q),
     timeLimit: settings.timeLimitOverride ?? q.timeLimit,
     points: q.points,
     options: q.options.map((o) => ({ id: o.id, text: o.text, isCorrect: o.isCorrect })),
