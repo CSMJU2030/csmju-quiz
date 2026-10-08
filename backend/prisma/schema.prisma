@@ -71,6 +71,8 @@ model Question {
   type             QuestionType @default(MULTIPLE_CHOICE)
   prompt           String       @db.VarChar(300)
   imageUrl         String?      @map("image_url") @db.VarChar(2048)
+  /// id ของรูปจาก Core Hub POST /images — มีค่าแล้ว image_url เป็น null (แสดงผลด้วย {CORE_HUB_URL}/api/v1/images/<id>/file)
+  imageId          String?      @map("image_id") @db.Uuid
   timeLimit        Int          @default(20) @map("time_limit")
   points           Int          @default(1000)
   tags             String[]     @default([])
@@ -109,6 +111,8 @@ model BankItem {
   type            QuestionType @default(MULTIPLE_CHOICE)
   prompt          String       @db.VarChar(300)
   imageUrl        String?      @map("image_url") @db.VarChar(2048)
+  /// id ของรูปจาก Core Hub POST /images (ดู Question.imageId)
+  imageId         String?      @map("image_id") @db.Uuid
   /// [{ id, text, isCorrect }] ตามลำดับ
   options         Json
   timeLimit       Int          @default(20) @map("time_limit")

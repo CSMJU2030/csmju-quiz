@@ -130,7 +130,13 @@
             "format": "uuid",
             "type": "string"
           },
+          "imageId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
           "imageUrl": {
+            "description": "URL สำหรับแสดงรูป (รูปที่อัปโหลด = ไฟล์จาก Core Hub)",
             "nullable": true,
             "type": "string"
           },
@@ -199,6 +205,12 @@
               "MEDIUM",
               "HARD"
             ],
+            "type": "string"
+          },
+          "imageId": {
+            "description": "id ของรูปจาก POST /api/v1/images (มีค่าแล้วไม่ใช้ imageUrl)",
+            "format": "uuid",
+            "nullable": true,
             "type": "string"
           },
           "imageUrl": {
@@ -1376,6 +1388,12 @@
             "format": "uuid",
             "type": "string"
           },
+          "imageId": {
+            "description": "id ของรูปจาก POST /api/v1/images (มีค่าแล้วไม่ใช้ imageUrl)",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
           "imageUrl": {
             "description": "ลิงก์รูปภาพ https:// เท่านั้น",
             "nullable": true,
@@ -1450,7 +1468,13 @@
             "format": "uuid",
             "type": "string"
           },
+          "imageId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
           "imageUrl": {
+            "description": "URL สำหรับแสดงรูป (รูปที่อัปโหลด = ไฟล์จาก Core Hub)",
             "nullable": true,
             "type": "string"
           },
@@ -1808,6 +1832,12 @@
             ],
             "type": "string"
           },
+          "imageId": {
+            "description": "id ของรูปจาก POST /api/v1/images (มีค่าแล้วไม่ใช้ imageUrl)",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
           "imageUrl": {
             "description": "ลิงก์รูปภาพ https:// เท่านั้น",
             "nullable": true,
@@ -1883,6 +1913,24 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UploadedImageView": {
+        "properties": {
+          "id": {
+            "description": "ส่งเป็น imageId ของคำถาม",
+            "format": "uuid",
+            "type": "string"
+          },
+          "url": {
+            "description": "URL สาธารณะของไฟล์รูปบน Core Hub (ใช้แสดงตัวอย่าง)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "url"
+        ],
         "type": "object"
       }
     },
@@ -3123,6 +3171,56 @@
         "summary": "Guest: leave the lobby (own player only)",
         "tags": [
           "guest-games"
+        ]
+      }
+    },
+    "/api/v1/images": {
+      "post": {
+        "description": "JPEG · PNG · WebP ไม่เกิน 5 MB · รูปเปิดดูได้โดยไม่ต้องล็อกอิน — ห้ามใช้กับรูปที่มีข้อมูลส่วนบุคคล",
+        "operationId": "ImagesController_upload",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadedImageView"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "csmju_quiz_access_token": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload a question image to the Core Hub image service",
+        "tags": [
+          "images"
         ]
       }
     },

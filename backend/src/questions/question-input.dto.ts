@@ -75,6 +75,16 @@ export class QuestionContentDto {
   @Matches(/^https:\/\//, { message: 'imageUrl must start with https://' })
   imageUrl?: string | null;
 
+  @ApiPropertyOptional({
+    type: String,
+    format: 'uuid',
+    nullable: true,
+    description: 'id ของรูปจาก POST /api/v1/images (มีค่าแล้วไม่ใช้ imageUrl)',
+  })
+  @IsOptional()
+  @IsUUID('4')
+  imageId?: string | null;
+
   @ApiProperty({ minimum: MIN_TIME_LIMIT, maximum: MAX_TIME_LIMIT, description: 'วินาที' })
   @IsInt()
   @Min(MIN_TIME_LIMIT)

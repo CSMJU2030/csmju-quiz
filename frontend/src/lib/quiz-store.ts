@@ -9,7 +9,7 @@ import type { PageMeta } from "@/lib/api";
 import type { QuestionInputBody, QuestionView, QuizSummaryView, QuizView } from "@/lib/api-types";
 import { DEFAULT_POINTS, MAX_POINTS } from "@/lib/question-model";
 import { newId } from "@/lib/utils";
-import type { Question, Quiz } from "@/types/quiz";
+import type { Question, Quiz, QuizStatus } from "@/types/quiz";
 
 const PAGE_LIMIT = 100;
 /** จำนวนคำขอพร้อมกันตอนโหลดรายละเอียดแบบทดสอบหลายชุด */
@@ -26,6 +26,7 @@ export function toQuestion(view: QuestionView): Question {
     points: view.points,
     options: view.options.map((o) => ({ id: o.id, text: o.text, isCorrect: o.isCorrect })),
     image: view.imageUrl ?? undefined,
+    imageId: view.imageId ?? undefined,
     tags: view.tags,
     difficulty: view.difficulty,
     sourceBankItemId: view.sourceBankItemId ?? undefined,
@@ -46,13 +47,21 @@ export function toQuiz(view: QuizView): Quiz {
   };
 }
 
+/** รูปที่อัปโหลดส่งเป็น imageId · ลิงก์ที่วางเองส่งเป็น imageUrl */
+export function imageBody(q: { image?: string; imageId?: string }) {
+  const url = q.image?.trim() || null;
+  return q.imageId && url
+    ? { imageId: q.imageId, imageUrl: null }
+    : { imageId: null, imageUrl: url };
+}
+
 /** คำถามที่ส่งให้ backend — ส่งเฉพาะประเภทที่ backend รองรับ (ปรนัย · ถูก/ผิด) */
 export function toQuestionInput(q: Question): QuestionInputBody {
   return {
     id: q.id || undefined,
     type: q.type === "TRUE_FALSE" ? "TRUE_FALSE" : "MULTIPLE_CHOICE",
     prompt: q.prompt,
-    imageUrl: q.image?.trim() || null,
+    ...imageBody(q),
     timeLimit: q.timeLimit,
     // ช่องคะแนนกำหนดเองที่ยังว่าง/เกินช่วง — บันทึกแบบร่างได้โดยไม่ให้ backend ตอบ 400
     points: Number.isFinite(q.points)
@@ -169,6 +178,11 @@ export async function saveQuiz(input: Quiz): Promise<Quiz> {
     questions: [...input.questions].sort((a, b) => a.order - b.order).map(toQuestionInput),
   });
   return toQuiz(saved);
+}
+
+/** เปลี่ยนสถานะอย่างเดียว (ไม่ส่งชุดคำถาม) — ใช้กับปุ่มบนการ์ดในหน้ารายการ */
+export async function setQuizStatus(id: string, status: QuizStatus): Promise<void> {
+  await apiPatch<QuizView>(`/api/v1/quizzes/${encodeURIComponent(id)}`, { status });
 }
 
 export async function deleteQuiz(id: string): Promise<void> {
