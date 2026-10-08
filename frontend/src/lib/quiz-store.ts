@@ -8,7 +8,7 @@ import { apiDelete, apiGet, apiList, apiPatch, apiPost } from "@/lib/api";
 import type { PageMeta } from "@/lib/api";
 import type { QuestionInputBody, QuestionView, QuizSummaryView, QuizView } from "@/lib/api-types";
 import { newId } from "@/lib/utils";
-import type { Question, Quiz } from "@/types/quiz";
+import type { Question, Quiz, QuizStatus } from "@/types/quiz";
 
 const PAGE_LIMIT = 100;
 /** จำนวนคำขอพร้อมกันตอนโหลดรายละเอียดแบบทดสอบหลายชุด */
@@ -165,6 +165,11 @@ export async function saveQuiz(input: Quiz): Promise<Quiz> {
     questions: [...input.questions].sort((a, b) => a.order - b.order).map(toQuestionInput),
   });
   return toQuiz(saved);
+}
+
+/** เปลี่ยนสถานะอย่างเดียว (ไม่ส่งชุดคำถาม) — ใช้กับปุ่มบนการ์ดในหน้ารายการ */
+export async function setQuizStatus(id: string, status: QuizStatus): Promise<void> {
+  await apiPatch<QuizView>(`/api/v1/quizzes/${encodeURIComponent(id)}`, { status });
 }
 
 export async function deleteQuiz(id: string): Promise<void> {

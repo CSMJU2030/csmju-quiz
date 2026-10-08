@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import {
+  ArchiveIcon,
   DeleteIcon,
   EditIcon,
   ScheduleIcon,
   SportsEsportsIcon,
+  UnarchiveIcon,
+  VisibilityOffIcon,
   WarningIcon,
 } from "@/components/icons";
 import { StatusBadge } from "@/components/game/ui";
@@ -17,6 +20,7 @@ import {
 } from "@/components/shared/ui";
 import { formatNumber, formatRelative } from "@/lib/format";
 import type { QuizListItem } from "@/lib/quiz-store";
+import type { QuizStatus } from "@/types/quiz";
 import { estimateMinutes, quizStatus } from "@/lib/quiz-status";
 
 interface QuizCardProps {
@@ -32,9 +36,13 @@ interface QuizCardProps {
     | "totalTimeLimit"
   >;
   onDelete?: (id: string) => void;
+  /** เปลี่ยนสถานะจากการ์ด (ยกเลิกเผยแพร่ · เก็บถาวร · กู้คืน) — ไม่ส่ง = ไม่แสดงปุ่ม */
+  onStatusChange?: (id: string, next: QuizStatus) => void;
+  /** กำลังบันทึกการเปลี่ยนสถานะของการ์ดนี้ */
+  busy?: boolean;
 }
 
-export default function QuizCard({ quiz, onDelete }: QuizCardProps) {
+export default function QuizCard({ quiz, onDelete, onStatusChange, busy }: QuizCardProps) {
   const title = quiz.title || "ไม่มีชื่อแบบทดสอบ";
   const status = quizStatus(quiz);
   const summary = {
@@ -84,15 +92,54 @@ export default function QuizCard({ quiz, onDelete }: QuizCardProps) {
             href={`/quiz/${quiz.id}/edit`}
             className={iconButtonClass}
             aria-label={`แก้ไขคำถาม ${title}`}
+            title="แก้ไขคำถาม"
           >
             <EditIcon className="h-5 w-5" />
           </Link>
+          {onStatusChange && quiz.status === "PUBLISHED" && (
+            <button
+              type="button"
+              onClick={() => onStatusChange(quiz.id, "DRAFT")}
+              disabled={busy}
+              className={iconButtonClass}
+              aria-label={`ยกเลิกการเผยแพร่ ${title}`}
+              title="ยกเลิกการเผยแพร่"
+            >
+              <VisibilityOffIcon className="h-5 w-5" />
+            </button>
+          )}
+          {onStatusChange &&
+            (quiz.status === "ARCHIVED" ? (
+              <button
+                type="button"
+                onClick={() => onStatusChange(quiz.id, "DRAFT")}
+                disabled={busy}
+                className={iconButtonClass}
+                aria-label={`กู้คืนเป็นแบบร่าง ${title}`}
+                title="กู้คืนเป็นแบบร่าง"
+              >
+                <UnarchiveIcon className="h-5 w-5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onStatusChange(quiz.id, "ARCHIVED")}
+                disabled={busy}
+                className={iconButtonClass}
+                aria-label={`เก็บถาวร ${title}`}
+                title="เก็บถาวร"
+              >
+                <ArchiveIcon className="h-5 w-5" />
+              </button>
+            ))}
           {onDelete && (
             <button
               type="button"
               onClick={() => onDelete(quiz.id)}
+              disabled={busy}
               className={iconDangerButtonClass}
               aria-label={`ลบ ${title}`}
+              title="ลบ"
             >
               <DeleteIcon className="h-5 w-5" />
             </button>
