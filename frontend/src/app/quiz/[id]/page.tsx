@@ -10,7 +10,8 @@ import {
   ContentCopyIcon,
   DeleteIcon,
   EditIcon,
-  FolderOpenIcon,
+  ArchiveIcon,
+  VisibilityOffIcon,
   QuizIcon,
   RefreshIcon,
   SportsEsportsIcon,
@@ -354,6 +355,7 @@ export default function QuizOverviewPage() {
                     disabled={busy}
                     className={secondaryButtonClass}
                   >
+                    <VisibilityOffIcon className="h-4 w-4" />
                     ยกเลิกการเผยแพร่
                   </button>
                 )}
@@ -364,7 +366,7 @@ export default function QuizOverviewPage() {
                     disabled={busy}
                     className={secondaryButtonClass}
                   >
-                    <FolderOpenIcon className="h-4 w-4" />
+                    <ArchiveIcon className="h-4 w-4" />
                     เก็บถาวร
                   </button>
                 )}
