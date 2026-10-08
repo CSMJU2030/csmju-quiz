@@ -18,12 +18,12 @@ import { StatCard, StatusBadge } from "@/components/game/ui";
 import { DIFFICULTY_TONE } from "@/components/quiz/bank-picker-modal";
 import { QuestionEditor } from "@/components/quiz/question-editor";
 import { RequiredNote } from "@/components/shared/form-field";
+import { SelectionBar } from "@/components/shared/selection-bar";
 import { ConfirmDeleteModal, Modal } from "@/components/shared/modal";
 import { ErrorAlert, SuccessToast } from "@/components/shared/notice";
 import { PAGE_SIZE, Pagination } from "@/components/shared/pagination";
 import { EmptyState, LoadErrorState, PageHeader, Skeleton } from "@/components/shared/states";
 import {
-  dangerButtonClass,
   iconButtonClass,
   iconDangerButtonClass,
   inputClass,
@@ -340,7 +340,7 @@ export default function QuestionBankPage() {
               setLevel(e.target.value as Difficulty | "");
               setPage(1);
             }}
-            className={`${inputClass} h-12`}
+            className={inputClass}
           >
             <option value="">ทุกระดับ</option>
             {LEVELS.map((d) => (
@@ -477,26 +477,15 @@ export default function QuestionBankPage() {
         )}
       </section>
 
-      {picked.length > 0 && (
-        <div
-          role="region"
-          aria-label="การกระทำกับคำถามที่เลือก"
-          className="fixed inset-x-4 bottom-4 z-30 mx-auto flex max-w-xl flex-wrap items-center justify-between gap-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-4 shadow-md md:left-64"
-        >
-          <p className="text-label-md text-on-surface tabular-nums">
-            เลือก {formatNumber(picked.length)} ข้อ
-          </p>
-          <div className="flex gap-3">
-            <button type="button" onClick={() => setPicked([])} className={secondaryButtonClass}>
-              ยกเลิกการเลือก
-            </button>
-            <button type="button" onClick={() => setDeleting(picked)} className={dangerButtonClass}>
-              <DeleteIcon className="h-4 w-4" />
-              ลบที่เลือก
-            </button>
-          </div>
-        </div>
-      )}
+      <SelectionBar
+        label="การกระทำกับคำถามที่เลือก"
+        count={picked.length}
+        unit="ข้อ"
+        total={items?.length ?? 0}
+        onDelete={() => setDeleting(picked)}
+        onSelectAll={() => setPicked(items ?? [])}
+        onClear={() => setPicked([])}
+      />
 
       <SuccessToast message={toast} onDone={clearToast} />
 

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormField, RequiredNote } from "@/components/shared/form-field";
+import { charCountHint } from "@/lib/format";
 import { PageHeader } from "@/components/shared/states";
 import { ReloginNotice } from "@/components/shared/notice";
 import {
@@ -85,7 +86,7 @@ export default function CreateQuizPage() {
           id="quiz-title"
           label="ชื่อแบบทดสอบ"
           required
-          hint={`${title.length}/${TITLE_MAX} ตัวอักษร`}
+          hint={charCountHint(title.length, TITLE_MAX)}
           error={titleError}
         >
           <input
@@ -103,7 +104,7 @@ export default function CreateQuizPage() {
         <FormField
           id="quiz-description"
           label="คำอธิบาย (ไม่บังคับ)"
-          hint={`${description.length}/${DESCRIPTION_MAX} ตัวอักษร`}
+          hint={charCountHint(description.length, DESCRIPTION_MAX)}
         >
           <textarea
             value={description}

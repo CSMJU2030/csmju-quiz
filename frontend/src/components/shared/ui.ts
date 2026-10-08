@@ -43,7 +43,7 @@ export const iconDangerButtonClass = `inline-flex min-h-11 min-w-11 items-center
 export const iconRoundButtonClass = `inline-flex min-h-11 min-w-11 items-center justify-center rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-variant/50 ${focusRing}`;
 
 export const inputClass =
-  "w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface transition-colors placeholder:text-on-surface-variant focus:border-accent focus:ring-3 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-12 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface transition-colors placeholder:text-on-surface-variant focus:border-accent focus:ring-3 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
 
 export const labelClass = "text-label-md text-on-surface";
 

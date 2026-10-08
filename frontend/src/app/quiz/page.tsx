@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AddIcon, MenuBookIcon, SearchIcon } from "@/components/icons";
 import QuizCard from "@/components/quiz/quiz-card";
 import { ConfirmDeleteModal } from "@/components/shared/modal";
+import { SelectionBar } from "@/components/shared/selection-bar";
 import { ErrorAlert, SuccessToast } from "@/components/shared/notice";
 import { PAGE_SIZE, Pagination } from "@/components/shared/pagination";
 import { EmptyState, LoadErrorState, PageHeader, Skeleton } from "@/components/shared/states";
@@ -64,6 +65,10 @@ export default function QuizListPage() {
   const [deletingQuiz, setDeletingQuiz] = useState<QuizListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [statusBusyId, setStatusBusyId] = useState<string | null>(null);
+  /** ติ๊กเลือกเพื่อลบหลายชุด (เฉพาะหน้าที่เห็นอยู่) */
+  const [picked, setPicked] = useState<string[]>([]);
+  const [confirmBulk, setConfirmBulk] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [actionError, setActionError] = useState("");
   const clearNotice = useCallback(() => setNotice(""), []);
@@ -138,6 +143,8 @@ export default function QuizListPage() {
     setActionError("");
     try {
       await deleteQuiz(deletingQuiz.id);
+      const goneId = deletingQuiz.id;
+      setPicked((cur) => cur.filter((id) => id !== goneId));
       setNotice(`ลบแบบทดสอบ “${deletingQuiz.title || "ไม่มีชื่อ"}” แล้ว`);
       setDeletingQuiz(null);
       setReload((n) => n + 1);
@@ -161,6 +168,37 @@ export default function QuizListPage() {
       setActionError(`เปลี่ยนสถานะไม่สำเร็จ: ${errorMessage(err)}`);
     } finally {
       setStatusBusyId(null);
+    }
+  };
+
+  // เปลี่ยนหน้า/แท็บ/คำค้น → ล้างที่เลือก (ไม่ให้ลบรายการที่มองไม่เห็น)
+  const [pickScope, setPickScope] = useState("");
+  const scope = `${page}|${selectedTab}|${search}|${sortBy}`;
+  if (scope !== pickScope) {
+    setPickScope(scope);
+    if (picked.length) setPicked([]);
+  }
+
+  const handleBulkDelete = async () => {
+    if (bulkBusy) return;
+    setBulkBusy(true);
+    setActionError("");
+    let done = 0;
+    try {
+      for (const id of picked) {
+        await deleteQuiz(id);
+        done++;
+      }
+      setNotice(`ลบแบบทดสอบ ${done} ชุดแล้ว`);
+    } catch (err) {
+      setActionError(
+        `ลบได้ ${done} จาก ${picked.length} ชุด ที่เหลือลบไม่สำเร็จ: ${errorMessage(err)}`,
+      );
+    } finally {
+      setPicked([]);
+      setConfirmBulk(false);
+      setBulkBusy(false);
+      setReload((n) => n + 1);
     }
   };
 
@@ -325,12 +363,40 @@ export default function QuizListPage() {
                 onDelete={() => setDeletingQuiz(quiz)}
                 onStatusChange={(_, next) => void handleStatusChange(quiz, next)}
                 busy={statusBusyId === quiz.id}
+                selected={picked.includes(quiz.id)}
+                onSelect={(checked) =>
+                  setPicked((cur) =>
+                    checked ? [...cur, quiz.id] : cur.filter((id) => id !== quiz.id),
+                  )
+                }
               />
             ))}
           </div>
           {meta && <Pagination meta={meta} onPage={setPage} label="แบบทดสอบ" />}
         </div>
       )}
+
+      <SelectionBar
+        label="การกระทำกับแบบทดสอบที่เลือก"
+        count={picked.length}
+        unit="ชุด"
+        total={quizzes.length}
+        busy={bulkBusy}
+        onDelete={() => setConfirmBulk(true)}
+        onSelectAll={() => setPicked(quizzes.map((q) => q.id))}
+        onClear={() => setPicked([])}
+      />
+
+      <ConfirmDeleteModal
+        open={confirmBulk}
+        title="ลบแบบทดสอบที่เลือก"
+        itemName={`${picked.length} ชุด`}
+        consequence={QUIZ_DELETE_CONSEQUENCE}
+        confirmLabel={`ลบ ${picked.length} ชุด`}
+        busy={bulkBusy}
+        onCancel={() => setConfirmBulk(false)}
+        onConfirm={() => void handleBulkDelete()}
+      />
 
       <ConfirmDeleteModal
         open={deletingQuiz !== null}

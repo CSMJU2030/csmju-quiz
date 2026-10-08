@@ -4,7 +4,14 @@
 "use client";
 
 import { useState } from "react";
-import { AddIcon, CheckCircleIcon, CloseIcon, ErrorIcon } from "@/components/icons";
+import {
+  AddIcon,
+  CheckCircleIcon,
+  CloseIcon,
+  ErrorIcon,
+  ExpandMoreIcon,
+  TuneIcon,
+} from "@/components/icons";
 import { FormField } from "@/components/shared/form-field";
 import {
   iconDangerButtonClass,
@@ -30,6 +37,7 @@ import {
   validateQuestion,
   type QuestionContent,
 } from "@/lib/question-model";
+import { charCountHint, formatNumber } from "@/lib/format";
 import { newId } from "@/lib/utils";
 import type { Difficulty, QuestionOption } from "@/types/quiz";
 import { PointsField } from "@/components/quiz/points-field";
@@ -43,6 +51,8 @@ interface QuestionEditorProps<T extends QuestionContent> {
   showErrors?: boolean;
   /** แสดงแท็กและระดับความยาก */
   showMeta?: boolean;
+  /** แสดงคำแนะนำวิธีกรอกตัวเลือก (หน้าแก้ไขแบบทดสอบแสดงเฉพาะข้อแรก) */
+  showHints?: boolean;
 }
 
 export function QuestionEditor<T extends QuestionContent>({
@@ -51,6 +61,7 @@ export function QuestionEditor<T extends QuestionContent>({
   onChange,
   showErrors = false,
   showMeta = true,
+  showHints = true,
 }: QuestionEditorProps<T>) {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [tagText, setTagText] = useState((value.tags ?? []).join(", "));
@@ -62,6 +73,23 @@ export function QuestionEditor<T extends QuestionContent>({
   const options = value.options ?? [];
   const setOptions = (next: QuestionOption[]) => set({ options: next });
   const isTrueFalse = value.type === "TRUE_FALSE";
+  // ประเภท เวลา คะแนน ความยาก แท็ก — ส่วนใหญ่ใช้ค่าเริ่มต้น จึงย่อเป็นบรรทัดสรุป · ช่องไหนผิดกางให้เอง
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsError = !isSupportedType(value.type) || Boolean(show("points") && issues.points);
+  const settingsShown = settingsOpen || settingsError;
+  const settingsId = `${idPrefix}-settings`;
+  const typeLabel = QUESTION_TYPES.find((t) => t.value === value.type)?.label ?? "ไม่รองรับ";
+  const summary = [
+    typeLabel,
+    formatTimeLimit(value.timeLimit),
+    Number.isFinite(value.points)
+      ? value.points
+        ? `${formatNumber(value.points)} คะแนน`
+        : "ไม่คิดคะแนน"
+      : "คะแนนไม่ถูกต้อง",
+    ...(showMeta ? [DIFFICULTY_LABEL[value.difficulty ?? "MEDIUM"]] : []),
+    ...(showMeta && value.tags?.length ? [value.tags.map((t) => `#${t}`).join(" ")] : []),
+  ];
 
   const optionsError = show("options") ? issues.options : undefined;
   const correctError = show("correct") || show("options") ? issues.correct : undefined;
@@ -78,54 +106,11 @@ export function QuestionEditor<T extends QuestionContent>({
 
   return (
     <div className="space-y-6">
-      <fieldset className="space-y-2">
-        <legend className={labelClass}>ประเภทคำถาม</legend>
-        {!isSupportedType(value.type) && (
-          <p className="flex items-center gap-1.5 text-label-sm text-error">
-            <ErrorIcon className="h-4 w-4" />
-            {issues.type}
-          </p>
-        )}
-        <div className="grid gap-3 sm:grid-cols-2">
-          {QUESTION_TYPES.map((t) => {
-            const checked = value.type === t.value;
-            return (
-              <label
-                key={t.value}
-                className={`flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border p-3 transition focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-container ${
-                  checked
-                    ? "border-primary-container bg-primary-container/5"
-                    : "border-outline-variant hover:border-primary-container/50"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name={`${idPrefix}-type`}
-                  value={t.value}
-                  checked={checked}
-                  onChange={() => {
-                    onChange(changeType(value, t.value));
-                    setTouched({});
-                  }}
-                  className="mt-0.5 h-5 w-5 shrink-0 accent-primary"
-                />
-                <span>
-                  <span className="block text-label-md text-on-surface">{t.label}</span>
-                  <span className="block text-caption text-on-surface-variant">
-                    {t.description}
-                  </span>
-                </span>
-              </label>
-            );
-          })}
-        </div>
-      </fieldset>
-
       <FormField
         id={`${idPrefix}-prompt`}
         label={isTrueFalse ? "ข้อความให้ตัดสินว่าถูกหรือผิด" : "โจทย์คำถาม"}
         required
-        hint={`${value.prompt.length}/${MAX_PROMPT} ตัวอักษร`}
+        hint={charCountHint(value.prompt.length, MAX_PROMPT)}
         error={show("prompt") ? issues.prompt : undefined}
       >
         <textarea
@@ -162,11 +147,13 @@ export function QuestionEditor<T extends QuestionContent>({
             *
           </span>
         </legend>
-        <p className="text-caption text-on-surface-variant">
-          {isTrueFalse
-            ? "เลือกว่าข้อความนี้ถูกหรือผิด"
-            : `กรอก ${MIN_OPTIONS}–${MAX_OPTIONS} ตัวเลือก แล้วกด "คำตอบที่ถูก" ที่ตัวเลือกที่ถูก 1 ข้อ`}
-        </p>
+        {showHints && (
+          <p className="text-caption text-on-surface-variant">
+            {isTrueFalse
+              ? "เลือกว่าข้อความนี้ถูกหรือผิด"
+              : `กรอก ${MIN_OPTIONS}–${MAX_OPTIONS} ตัวเลือก แล้วกด "คำตอบที่ถูก" ที่ตัวเลือกที่ถูก 1 ข้อ`}
+          </p>
+        )}
 
         <div className="grid gap-3 md:grid-cols-2">
           {options.map((option, index) => {
@@ -286,70 +273,138 @@ export function QuestionEditor<T extends QuestionContent>({
         )}
       </fieldset>
 
-      <div
-        className={`grid gap-4 ${showMeta ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2"}`}
-      >
-        <FormField id={`${idPrefix}-time`} label="เวลาตอบ">
-          <select
-            value={value.timeLimit}
-            onChange={(e) => set({ timeLimit: Number(e.target.value) })}
-            className={inputClass}
-          >
-            {Array.from(new Set([...TIME_LIMIT_CHOICES, value.timeLimit]))
-              .sort((a, b) => a - b)
-              .map((s) => (
-                <option key={s} value={s}>
-                  {formatTimeLimit(s)}
-                </option>
-              ))}
-          </select>
-        </FormField>
-        <PointsField
-          id={`${idPrefix}-points`}
-          points={value.points}
-          error={show("points") ? issues.points : undefined}
-          onChange={(points) => set({ points })}
-          onBlur={() => touch("points")}
-        />
+      <section className="rounded-lg border border-outline-variant/60">
+        <button
+          type="button"
+          aria-expanded={settingsShown}
+          aria-controls={settingsId}
+          // ช่องที่ผิดยังกางค้างไว้จนแก้เสร็จ (ไม่ปิดปุ่ม — ปุ่ม disabled ต้องมีเหตุผลกำกับ ข้อ 8)
+          onClick={() => setSettingsOpen((o) => !o)}
+          className="flex min-h-11 w-full items-center gap-3 rounded-lg px-4 py-2 text-left transition-colors hover:bg-surface-variant/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          <TuneIcon className="h-5 w-5 shrink-0 text-on-surface-variant" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-label-md text-on-surface">ตั้งค่าข้อนี้</span>
+            <span className="block truncate text-caption text-on-surface-variant">
+              {summary.join(" · ")}
+            </span>
+          </span>
+          <ExpandMoreIcon
+            className={`h-5 w-5 shrink-0 text-on-surface-variant transition-transform ${settingsShown ? "rotate-180" : ""}`}
+          />
+        </button>
+        {settingsShown && (
+          <div id={settingsId} className="space-y-6 border-t border-outline-variant/40 p-4">
+            <fieldset className="space-y-2">
+              <legend className={labelClass}>ประเภทคำถาม</legend>
+              {!isSupportedType(value.type) && (
+                <p className="flex items-center gap-1.5 text-label-sm text-error">
+                  <ErrorIcon className="h-4 w-4" />
+                  {issues.type}
+                </p>
+              )}
+              <div className="grid gap-3 sm:grid-cols-2">
+                {QUESTION_TYPES.map((t) => {
+                  const checked = value.type === t.value;
+                  return (
+                    <label
+                      key={t.value}
+                      className={`flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border p-3 transition focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-container ${
+                        checked
+                          ? "border-primary-container bg-primary-container/5"
+                          : "border-outline-variant hover:border-primary-container/50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name={`${idPrefix}-type`}
+                        value={t.value}
+                        checked={checked}
+                        onChange={() => {
+                          onChange(changeType(value, t.value));
+                          setTouched({});
+                        }}
+                        className="mt-0.5 h-5 w-5 shrink-0 accent-primary"
+                      />
+                      <span>
+                        <span className="block text-label-md text-on-surface">{t.label}</span>
+                        <span className="block text-caption text-on-surface-variant">
+                          {t.description}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
 
-        {showMeta && (
-          <>
-            <FormField id={`${idPrefix}-difficulty`} label="ระดับความยาก">
-              <select
-                value={value.difficulty ?? "MEDIUM"}
-                onChange={(e) => set({ difficulty: e.target.value as Difficulty })}
-                className={inputClass}
-              >
-                {DIFFICULTIES.map((d) => (
-                  <option key={d} value={d}>
-                    {DIFFICULTY_LABEL[d]}
-                  </option>
-                ))}
-              </select>
-            </FormField>
-            <FormField
-              id={`${idPrefix}-tags`}
-              label="แท็ก"
-              hint="คั่นด้วยจุลภาค เช่น เครือข่าย, บทที่ 2"
+            <div
+              className={`grid gap-4 ${showMeta ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2"}`}
             >
-              <input
-                type="text"
-                value={tagText}
-                onChange={(e) => {
-                  setTagText(e.target.value);
-                  set({
-                    tags: e.target.value
-                      .split(",")
-                      .map((t) => t.trim())
-                      .filter(Boolean),
-                  });
-                }}
-                className={inputClass}
+              <FormField id={`${idPrefix}-time`} label="เวลาตอบ">
+                <select
+                  value={value.timeLimit}
+                  onChange={(e) => set({ timeLimit: Number(e.target.value) })}
+                  className={inputClass}
+                >
+                  {Array.from(new Set([...TIME_LIMIT_CHOICES, value.timeLimit]))
+                    .sort((a, b) => a - b)
+                    .map((s) => (
+                      <option key={s} value={s}>
+                        {formatTimeLimit(s)}
+                      </option>
+                    ))}
+                </select>
+              </FormField>
+              <PointsField
+                id={`${idPrefix}-points`}
+                points={value.points}
+                error={show("points") ? issues.points : undefined}
+                onChange={(points) => set({ points })}
+                onBlur={() => touch("points")}
               />
-            </FormField>
-          </>
+
+              {showMeta && (
+                <>
+                  <FormField id={`${idPrefix}-difficulty`} label="ระดับความยาก">
+                    <select
+                      value={value.difficulty ?? "MEDIUM"}
+                      onChange={(e) => set({ difficulty: e.target.value as Difficulty })}
+                      className={inputClass}
+                    >
+                      {DIFFICULTIES.map((d) => (
+                        <option key={d} value={d}>
+                          {DIFFICULTY_LABEL[d]}
+                        </option>
+                      ))}
+                    </select>
+                  </FormField>
+                  <FormField
+                    id={`${idPrefix}-tags`}
+                    label="แท็ก"
+                    hint="คั่นด้วยจุลภาค เช่น เครือข่าย, บทที่ 2"
+                  >
+                    <input
+                      type="text"
+                      value={tagText}
+                      onChange={(e) => {
+                        setTagText(e.target.value);
+                        set({
+                          tags: e.target.value
+                            .split(",")
+                            .map((t) => t.trim())
+                            .filter(Boolean),
+                        });
+                      }}
+                      className={inputClass}
+                    />
+                  </FormField>
+                </>
+              )}
+            </div>
+          </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

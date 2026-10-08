@@ -20,6 +20,7 @@ import { BankPickerModal } from "@/components/quiz/bank-picker-modal";
 import { QuestionEditor } from "@/components/quiz/question-editor";
 import { FormField, RequiredNote } from "@/components/shared/form-field";
 import { ConfirmDeleteModal, Modal } from "@/components/shared/modal";
+import { OverflowMenu } from "@/components/shared/overflow-menu";
 import { QuizWorkspaceHeader } from "@/components/quiz/quiz-workspace-header";
 import { EmptyState, LoadErrorState, PageSkeleton } from "@/components/shared/states";
 import {
@@ -32,12 +33,12 @@ import {
   secondaryButtonClass,
   dangerButtonClass,
 } from "@/components/shared/ui";
-import { formatTime } from "@/lib/format";
+import { charCountHint, formatTime } from "@/lib/format";
 import { ApiError, errorMessage, setUnsavedWork } from "@/lib/api";
 import { bankItemsToQuestions, saveQuestionToBank, type BankItem } from "@/lib/question-bank";
 import { cloneContent, createQuestion, issueList, normalizeContent } from "@/lib/question-model";
 import { createDraftQuiz, getQuizById, saveQuiz } from "@/lib/quiz-store";
-import { getQuestionTypeLabel, newId } from "@/lib/utils";
+import { newId } from "@/lib/utils";
 import type { Question, Quiz } from "@/types/quiz";
 import { ErrorAlert, ReloginNotice, SuccessToast } from "@/components/shared/notice";
 
@@ -81,6 +82,9 @@ export default function EditQuizPage() {
   /** ลิงก์ที่ผู้ใช้กดไปขณะยังมีการแก้ที่ไม่ได้บันทึก */
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  /** id ของคำถามที่ติ๊กเลือกไว้ (ลบหลายข้อพร้อมกัน) */
+  const [picked, setPicked] = useState<string[]>([]);
+  const [confirmBulk, setConfirmBulk] = useState(false);
   /** เพิ่มเมื่อยกเลิกการแก้ไข — ให้ตัวแก้ไขแต่ละข้อเริ่มใหม่จากค่าที่บันทึกไว้ */
   const [revision, setRevision] = useState(0);
   const [loadError, setLoadError] = useState<unknown>(null);
@@ -223,6 +227,7 @@ export default function EditQuizPage() {
 
   function remove(id: string) {
     setQuestions((current) => renumber(current.filter((q) => q.id !== id)));
+    setPicked((cur) => cur.filter((x) => x !== id));
   }
 
   function move(index: number, direction: -1 | 1) {
@@ -442,9 +447,6 @@ export default function EditQuizPage() {
       <p id="move-down-disabled-reason" className="sr-only">
         ข้อนี้อยู่ล่างสุดแล้ว
       </p>
-      <p id="to-bank-disabled-reason" className="sr-only">
-        กรอกคำถามให้ครบก่อนบันทึกเข้าคลัง
-      </p>
 
       {sessionExpired && <ReloginNotice onClose={() => setSessionExpired(false)} />}
       <ErrorAlert message={actionError} onClose={() => setActionError("")} />
@@ -487,7 +489,7 @@ export default function EditQuizPage() {
           id="edit-title"
           label="ชื่อแบบทดสอบ"
           required
-          hint={`${title.length}/${MAX_TITLE} ตัวอักษร`}
+          hint={charCountHint(title.length, MAX_TITLE)}
           error={
             (showErrors || titleTouched) && !title.trim() ? "กรุณากรอกชื่อแบบทดสอบ" : undefined
           }
@@ -504,7 +506,7 @@ export default function EditQuizPage() {
         <FormField
           id="edit-description"
           label="คำอธิบาย (ไม่บังคับ)"
-          hint={`${description.length}/${MAX_DESCRIPTION} ตัวอักษร`}
+          hint={charCountHint(description.length, MAX_DESCRIPTION)}
         >
           <textarea
             value={description}
@@ -553,13 +555,27 @@ export default function EditQuizPage() {
                   >
                     <header className="flex flex-wrap items-center justify-between gap-2 border-b border-outline-variant/40 px-6 py-3">
                       <div className="flex flex-wrap items-center gap-2">
+                        <label className="-ml-2 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg has-focus-visible:outline-2 has-focus-visible:outline-accent">
+                          <input
+                            type="checkbox"
+                            checked={picked.includes(question.id)}
+                            onChange={(e) =>
+                              setPicked((cur) =>
+                                e.target.checked
+                                  ? [...cur, question.id]
+                                  : cur.filter((id) => id !== question.id),
+                              )
+                            }
+                            aria-label={`เลือกข้อที่ ${index + 1}`}
+                            className="h-5 w-5 accent-primary"
+                          />
+                        </label>
                         <h3
                           id={`q-${question.id}-title`}
                           className="font-display text-body-lg font-semibold text-on-surface"
                         >
                           ข้อที่ {index + 1}
                         </h3>
-                        <StatusBadge tone="info">{getQuestionTypeLabel(question.type)}</StatusBadge>
                         {question.sourceBankItemId && (
                           <StatusBadge tone="neutral">มาจากคลัง</StatusBadge>
                         )}
@@ -588,31 +604,27 @@ export default function EditQuizPage() {
                         >
                           <ArrowDownwardIcon className="h-5 w-5" />
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => duplicate(index)}
-                          aria-label={`ทำซ้ำข้อที่ ${index + 1}`}
-                          className={iconButtonClass}
-                        >
-                          <ContentCopyIcon className="h-5 w-5" />
-                        </button>
-                        {!question.sourceBankItemId && (
-                          <button
-                            type="button"
-                            onClick={() => void toBank(question)}
-                            disabled={issues.length > 0}
-                            aria-describedby={
-                              issues.length > 0 ? "to-bank-disabled-reason" : undefined
-                            }
-                            aria-label={`บันทึกข้อที่ ${index + 1} เข้าคลัง`}
-                            title={
-                              issues.length ? "กรอกคำถามให้ครบก่อนบันทึกเข้าคลัง" : "บันทึกเข้าคลัง"
-                            }
-                            className={iconButtonClass}
-                          >
-                            <DatabaseIcon className="h-5 w-5" />
-                          </button>
-                        )}
+                        <OverflowMenu
+                          label={`คำสั่งเพิ่มเติมของข้อที่ ${index + 1}`}
+                          items={[
+                            {
+                              label: "ทำสำเนาข้อนี้",
+                              icon: <ContentCopyIcon className="h-5 w-5" />,
+                              onSelect: () => duplicate(index),
+                            },
+                            ...(question.sourceBankItemId
+                              ? []
+                              : [
+                                  {
+                                    label: "บันทึกเข้าคลังคำถาม",
+                                    icon: <DatabaseIcon className="h-5 w-5" />,
+                                    onSelect: () => void toBank(question),
+                                    disabled: issues.length > 0,
+                                    hint: issues.length > 0 ? "กรอกคำถามให้ครบก่อน" : undefined,
+                                  },
+                                ]),
+                          ]}
+                        />
                         <button
                           type="button"
                           onClick={() =>
@@ -630,6 +642,7 @@ export default function EditQuizPage() {
                         idPrefix={`q-${question.id}`}
                         value={question}
                         onChange={update}
+                        showHints={index === 0}
                         showErrors={showErrors}
                       />
                     </div>
@@ -665,33 +678,67 @@ export default function EditQuizPage() {
         }}
       />
 
-      {isDirty && (
+      {picked.length > 0 ? (
         <div
           role="region"
-          aria-label="บันทึกการแก้ไข"
+          aria-label="การกระทำกับคำถามที่เลือก"
           className="sticky bottom-4 z-20 mx-auto flex max-w-xl flex-wrap items-center justify-between gap-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 shadow-md"
         >
-          <p className="text-label-md text-on-surface">มีการแก้ไขที่ยังไม่ได้บันทึก</p>
-          {/* เรียง [ยืนยัน] [ยกเลิก] จากซ้าย ตาม ui-design-system.md ข้อ 8.1 */}
-          <div className="flex gap-2">
+          <p className="text-label-md text-on-surface tabular-nums">
+            เลือก {picked.length} จาก {questions.length} ข้อ
+          </p>
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => handleSave("draft")}
-              disabled={isSaving}
-              className={primaryButtonClass}
+              onClick={() => setConfirmBulk(true)}
+              className={dangerButtonClass}
             >
-              บันทึก
+              <DeleteIcon className="h-4 w-4" />
+              ลบที่เลือก
             </button>
-            <button
-              type="button"
-              onClick={() => setConfirmDiscard(true)}
-              disabled={isSaving}
-              className={secondaryButtonClass}
-            >
-              ยกเลิก
+            {picked.length < questions.length && (
+              <button
+                type="button"
+                onClick={() => setPicked(questions.map((q) => q.id))}
+                className={secondaryButtonClass}
+              >
+                เลือกทั้งหมด
+              </button>
+            )}
+            <button type="button" onClick={() => setPicked([])} className={secondaryButtonClass}>
+              ยกเลิกการเลือก
             </button>
           </div>
         </div>
+      ) : (
+        isDirty && (
+          <div
+            role="region"
+            aria-label="บันทึกการแก้ไข"
+            className="sticky bottom-4 z-20 mx-auto flex max-w-xl flex-wrap items-center justify-between gap-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 shadow-md"
+          >
+            <p className="text-label-md text-on-surface">มีการแก้ไขที่ยังไม่ได้บันทึก</p>
+            {/* เรียง [ยืนยัน] [ยกเลิก] จากซ้าย ตาม ui-design-system.md ข้อ 8.1 */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleSave("draft")}
+                disabled={isSaving}
+                className={primaryButtonClass}
+              >
+                บันทึก
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDiscard(true)}
+                disabled={isSaving}
+                className={secondaryButtonClass}
+              >
+                ยกเลิก
+              </button>
+            </div>
+          </div>
+        )
       )}
 
       <Modal
@@ -738,17 +785,42 @@ export default function EditQuizPage() {
         </p>
       </Modal>
 
+      <ConfirmDeleteModal
+        open={confirmBulk}
+        title="ลบคำถามที่เลือก"
+        itemName={`${picked.length} ข้อ`}
+        consequence="จะถูกลบออกจากแบบทดสอบนี้ (คำถามในคลังไม่ได้รับผลกระทบ) ยกเลิกได้โดยไม่บันทึกหน้านี้"
+        confirmLabel={`ลบ ${picked.length} ข้อ`}
+        onCancel={() => setConfirmBulk(false)}
+        onConfirm={() => {
+          const gone = new Set(picked);
+          setQuestions((current) => renumber(current.filter((q) => !gone.has(q.id))));
+          setToast(`ลบ ${gone.size} ข้อแล้ว อย่าลืมบันทึก`);
+          setPicked([]);
+          setConfirmBulk(false);
+        }}
+      />
+
       <Modal
         open={confirmDiscard}
         title="ยกเลิกการแก้ไข"
         onClose={() => setConfirmDiscard(false)}
         footer={
           <>
+            {/* ปุ่มเรียง [ยกเลิก] [ยืนยันการลบ] แบบเดียวกับ ConfirmDeleteModal (ข้อ 7.2.1) */}
+            <button
+              type="button"
+              onClick={() => setConfirmDiscard(false)}
+              className={secondaryButtonClass}
+            >
+              แก้ไขต่อ
+            </button>
             <button
               type="button"
               onClick={() => {
                 setConfirmDiscard(false);
                 setCheckMode(null);
+                setPicked([]);
                 setSaveError("");
                 if (quiz) applyQuiz(quiz);
                 setRevision((n) => n + 1);
@@ -757,13 +829,6 @@ export default function EditQuizPage() {
               className={dangerButtonClass}
             >
               ยกเลิกการแก้ไข
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmDiscard(false)}
-              className={secondaryButtonClass}
-            >
-              แก้ไขต่อ
             </button>
           </>
         }
