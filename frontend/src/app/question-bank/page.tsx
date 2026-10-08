@@ -292,7 +292,7 @@ export default function QuestionBankPage() {
 
       <section
         aria-label="ตัวกรอง"
-        className="flex flex-col gap-4 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-6 py-5 shadow-sm lg:flex-row lg:items-end"
+        className="flex flex-col gap-4 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-6 py-5 shadow-sm lg:flex-row lg:items-start"
       >
         <div className="flex-1 space-y-2">
           <label htmlFor="bank-search" className={labelClass}>
@@ -320,8 +320,7 @@ export default function QuestionBankPage() {
             list="bank-tag-options"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
-            placeholder="ทุกแท็ก"
-            aria-describedby="bank-tag-hint"
+            placeholder="ทุกแท็ก · เลือกจากรายการได้"
             className={inputClass}
           />
           <datalist id="bank-tag-options">
@@ -329,11 +328,8 @@ export default function QuestionBankPage() {
               <option key={t} value={t} />
             ))}
           </datalist>
-          <p id="bank-tag-hint" className="text-caption text-on-surface-variant">
-            พิมพ์ชื่อแท็กให้ตรงทั้งคำ
-          </p>
         </div>
-        <div className="space-y-2 md:w-48 lg:self-start">
+        <div className="space-y-2 md:w-48">
           <label htmlFor="bank-level" className={labelClass}>
             ระดับความยาก
           </label>
@@ -344,7 +340,7 @@ export default function QuestionBankPage() {
               setLevel(e.target.value as Difficulty | "");
               setPage(1);
             }}
-            className={inputClass}
+            className={`${inputClass} h-12`}
           >
             <option value="">ทุกระดับ</option>
             {LEVELS.map((d) => (

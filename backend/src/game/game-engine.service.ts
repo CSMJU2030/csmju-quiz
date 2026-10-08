@@ -259,11 +259,12 @@ export class GameEngine implements OnApplicationBootstrap, OnModuleDestroy {
 
     if (session.phase === 'QUESTION') {
       const deadline = this.questionDeadline(session);
-      const closeAt = session.countdownEndsAt
-        ? Math.min(session.countdownEndsAt.getTime(), deadline)
-        : deadline;
-      // ปิดจริงหลังเวลาที่ผู้เล่นเห็นเล็กน้อย — คำตอบที่ส่งทันแต่มาถึงช้า (เวลาเดินทาง) ยังรับได้
-      due = closeAt + TIMING.LATE_GRACE_MS;
+      // countdownEndsAt มีค่าเมื่อทุกคนตอบครบแล้ว — ไม่มีคำตอบค้างระหว่างทาง ปิดตรงเวลาที่ผู้เล่นเห็นได้เลย
+      // (เดิมรออีก LATE_GRACE_MS หน้าจอจึงค้างที่ 0 ประมาณครึ่งวินาทีก่อนเฉลย)
+      // หมดเวลาตามปกติ → ปิดหลังเวลาที่เห็นเล็กน้อย คำตอบที่ส่งทันแต่มาถึงช้า (เวลาเดินทาง) ยังรับได้
+      due = session.countdownEndsAt
+        ? Math.min(session.countdownEndsAt.getTime(), deadline + TIMING.LATE_GRACE_MS)
+        : deadline + TIMING.LATE_GRACE_MS;
       run = () => this.closeQuestion(sessionId, index);
     } else if (session.phase === 'RESULT') {
       due = session.phaseEndsAt?.getTime() ?? Date.now();
