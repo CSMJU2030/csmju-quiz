@@ -941,7 +941,7 @@ function LiveStanding({
 
       <h2 className="mb-3 mt-6 flex items-center justify-center gap-2 text-label-md text-on-surface-variant">
         <Icon name="trophy" size={16} className="text-primary-container" />
-        {TOP_N} อันดับแรก
+        ตารางอันดับ
       </h2>
       <ol className="mx-auto max-w-md space-y-2">
         {top.map((p, i) => (
