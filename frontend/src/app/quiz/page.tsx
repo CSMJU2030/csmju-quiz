@@ -198,7 +198,7 @@ export default function QuizListPage() {
         <div
           role="tablist"
           aria-label="สถานะแบบทดสอบ"
-          className="flex overflow-x-auto border-b border-outline-variant/40 px-2"
+          className="relative flex overflow-x-auto border-b border-outline-variant/40 px-2"
         >
           {TABS.map((tab) => {
             const selected = selectedTab === tab.value;
@@ -233,7 +233,7 @@ export default function QuizListPage() {
           })}
         </div>
 
-        <div className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-end">
+        <div className="flex flex-col gap-4 px-6 py-5 lg:flex-row lg:items-end">
           <div className="flex-1 space-y-2">
             <label htmlFor="quiz-search" className={labelClass}>
               ค้นหา
@@ -250,7 +250,7 @@ export default function QuizListPage() {
               />
             </div>
           </div>
-          <div className="space-y-2 md:w-48">
+          <div className="space-y-2 lg:w-48">
             <label htmlFor="quiz-sort" className={labelClass}>
               เรียงตาม
             </label>
@@ -283,7 +283,7 @@ export default function QuizListPage() {
           }}
         />
       ) : state === "loading" ? (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-6">
           {[1, 2, 3, 4, 5, 6].map((item) => (
             <Skeleton key={item} className="h-52" />
           ))}
@@ -317,7 +317,7 @@ export default function QuizListPage() {
         )
       ) : (
         <div className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-6">
             {quizzes.map((quiz) => (
               <QuizCard
                 key={quiz.id}

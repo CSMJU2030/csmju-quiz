@@ -301,11 +301,6 @@ function JoinInner() {
           >
             เข้าร่วมเกม
           </h1>
-          <p className="mt-1 text-body-md text-on-primary/80">
-            {pinLocked
-              ? "ตั้งชื่อ แล้วเลือกรูปโปรไฟล์ของคุณ"
-              : "กรอกรหัสเกม ตั้งชื่อ แล้วเลือกรูปโปรไฟล์ของคุณ"}
-          </p>
         </div>
 
         <div aria-live="polite" className="relative mt-6 flex flex-col items-center gap-2">
@@ -317,7 +312,6 @@ function JoinInner() {
             inverse
             className="animate-pop shadow-md"
           />
-          <p className="text-label-sm text-on-primary/70">โปรไฟล์ของคุณในเกม</p>
           <p
             className={`max-w-full truncate font-display text-headline-md ${
               nickname.trim() ? "text-on-primary" : "text-on-primary/50"
@@ -325,12 +319,6 @@ function JoinInner() {
           >
             {previewName}
           </p>
-          {roomTitle && (
-            <p className="mt-1 inline-flex max-w-full items-center gap-1.5 rounded-full bg-on-primary/10 px-3 py-1 text-label-sm text-on-primary fade-slide-up">
-              <CheckIcon className="h-4 w-4 shrink-0" />
-              <span className="truncate">พบห้อง: {roomTitle}</span>
-            </p>
-          )}
         </div>
       </section>
 
@@ -346,14 +334,12 @@ function JoinInner() {
           {channels.map(({ key, href, title, desc, Icon, active }) => {
             const body = (
               <>
-                <span className="flex items-center gap-2 text-label-md">
-                  {active ? (
-                    <CheckIcon className="h-5 w-5 shrink-0" />
-                  ) : (
-                    <Icon className="h-5 w-5 shrink-0" />
-                  )}
-                  {title}
-                </span>
+                {active ? (
+                  <CheckIcon className="h-5 w-5 shrink-0" />
+                ) : (
+                  <Icon className="h-5 w-5 shrink-0" />
+                )}
+                <span className="text-label-md">{title}</span>
                 <span
                   className={`text-label-sm ${active ? "text-on-primary/80" : "text-on-surface-variant"}`}
                 >
@@ -362,7 +348,7 @@ function JoinInner() {
               </>
             );
             const box =
-              "flex min-h-24 flex-col items-start justify-center gap-1 rounded-xl border-2 px-4 py-3 text-left transition-colors";
+              "flex min-h-24 flex-col items-start justify-start gap-1 rounded-xl border-2 px-3 py-3 text-left transition-colors sm:px-4";
             return active ? (
               <div
                 key={key}
@@ -449,7 +435,7 @@ function JoinInner() {
           label="ชื่อผู้เล่น"
           required
           error={nameError ?? undefined}
-          hint={`${nickname.length}/${MAX_NICKNAME} ตัวอักษร · ชื่อนี้จะแสดงให้ทุกคนในห้องเห็นและบันทึกในรายงานของผู้เปิดห้อง`}
+          hint={`${nickname.length}/${MAX_NICKNAME} · ทุกคนในห้องและผู้เปิดห้องจะเห็นชื่อนี้`}
         >
           <input
             value={nickname}
