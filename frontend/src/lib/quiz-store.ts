@@ -7,6 +7,7 @@
 import { apiDelete, apiGet, apiList, apiPatch, apiPost } from "@/lib/api";
 import type { PageMeta } from "@/lib/api";
 import type { QuestionInputBody, QuestionView, QuizSummaryView, QuizView } from "@/lib/api-types";
+import { DEFAULT_POINTS, MAX_POINTS } from "@/lib/question-model";
 import { newId } from "@/lib/utils";
 import type { Question, Quiz, QuizStatus } from "@/types/quiz";
 
@@ -62,7 +63,10 @@ export function toQuestionInput(q: Question): QuestionInputBody {
     prompt: q.prompt,
     ...imageBody(q),
     timeLimit: q.timeLimit,
-    points: q.points,
+    // ช่องคะแนนกำหนดเองที่ยังว่าง/เกินช่วง — บันทึกแบบร่างได้โดยไม่ให้ backend ตอบ 400
+    points: Number.isFinite(q.points)
+      ? Math.min(MAX_POINTS, Math.max(0, Math.round(q.points)))
+      : DEFAULT_POINTS,
     tags: q.tags ?? [],
     difficulty: q.difficulty ?? "MEDIUM",
     sourceBankItemId: q.sourceBankItemId || null,

@@ -76,3 +76,18 @@ describe("quiz-store mapping", () => {
     });
   });
 });
+
+describe("custom points", () => {
+  it("keeps any whole number in range and repairs blank or out-of-range drafts", async () => {
+    const { toQuestionInput } = await import("@/lib/quiz-store");
+    const { validateQuestion, blankContent } = await import("@/lib/question-model");
+    const q = { ...blankContent(), id: "", quizId: "", order: 1 };
+    expect(toQuestionInput({ ...q, points: 1500 }).points).toBe(1500);
+    expect(toQuestionInput({ ...q, points: Number.NaN }).points).toBe(1000);
+    expect(toQuestionInput({ ...q, points: 9999 }).points).toBe(5000);
+    expect(validateQuestion({ ...q, points: 1500 }).points).toBeUndefined();
+    expect(validateQuestion({ ...q, points: 5001 }).points).toBeDefined();
+    expect(validateQuestion({ ...q, points: Number.NaN }).points).toBeDefined();
+    expect(validateQuestion({ ...q, points: 12.5 }).points).toBeDefined();
+  });
+});
