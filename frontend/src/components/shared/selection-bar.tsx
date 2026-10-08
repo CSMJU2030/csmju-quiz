@@ -42,7 +42,13 @@ export function SelectionBar({
           เลือก {formatNumber(count)} {unit}
         </p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={onDelete} disabled={busy} className={dangerButtonClass}>
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={busy}
+            aria-busy={busy}
+            className={dangerButtonClass}
+          >
             <DeleteIcon className="h-4 w-4" />
             ลบที่เลือก
           </button>

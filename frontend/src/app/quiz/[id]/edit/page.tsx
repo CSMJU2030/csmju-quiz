@@ -807,6 +807,14 @@ export default function EditQuizPage() {
         onClose={() => setConfirmDiscard(false)}
         footer={
           <>
+            {/* ปุ่มเรียง [ยกเลิก] [ยืนยันการลบ] แบบเดียวกับ ConfirmDeleteModal (ข้อ 7.2.1) */}
+            <button
+              type="button"
+              onClick={() => setConfirmDiscard(false)}
+              className={secondaryButtonClass}
+            >
+              แก้ไขต่อ
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -821,13 +829,6 @@ export default function EditQuizPage() {
               className={dangerButtonClass}
             >
               ยกเลิกการแก้ไข
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmDiscard(false)}
-              className={secondaryButtonClass}
-            >
-              แก้ไขต่อ
             </button>
           </>
         }

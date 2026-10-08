@@ -278,9 +278,9 @@ export function QuestionEditor<T extends QuestionContent>({
           type="button"
           aria-expanded={settingsShown}
           aria-controls={settingsId}
+          // ช่องที่ผิดยังกางค้างไว้จนแก้เสร็จ (ไม่ปิดปุ่ม — ปุ่ม disabled ต้องมีเหตุผลกำกับ ข้อ 8)
           onClick={() => setSettingsOpen((o) => !o)}
-          disabled={settingsError}
-          className="flex min-h-11 w-full items-center gap-3 rounded-lg px-4 py-2 text-left transition-colors hover:bg-surface-variant/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-default"
+          className="flex min-h-11 w-full items-center gap-3 rounded-lg px-4 py-2 text-left transition-colors hover:bg-surface-variant/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           <TuneIcon className="h-5 w-5 shrink-0 text-on-surface-variant" />
           <span className="min-w-0 flex-1">
