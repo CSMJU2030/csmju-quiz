@@ -180,7 +180,8 @@ async function request<T>(
       credentials: "same-origin",
       headers: {
         Accept: "application/json",
-        ...(init.body ? { "Content-Type": "application/json" } : {}),
+        // FormData (อัปโหลดไฟล์) ให้เบราว์เซอร์ตั้ง multipart boundary เอง
+        ...(typeof init.body === "string" ? { "Content-Type": "application/json" } : {}),
         ...init.headers,
       },
     });
@@ -237,6 +238,11 @@ export async function apiPost<T>(
   options?: RequestOptions,
 ): Promise<T> {
   return (await request<T>(path, { method: "POST", body: JSON.stringify(payload) }, options)).data;
+}
+
+/** ส่งไฟล์แบบ multipart/form-data */
+export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
+  return (await request<T>(path, { method: "POST", body: form })).data;
 }
 
 export async function apiPatch<T>(path: string, payload: unknown): Promise<T> {

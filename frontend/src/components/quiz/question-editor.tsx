@@ -3,7 +3,6 @@
 // ตัวเลือกใช้สีและรูปทรงเดียวกับหน้าเกม (components/game/answer-colors.ts) เพื่อให้ผู้สร้างเห็นแบบที่ผู้เล่นเห็น
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { AddIcon, CheckCircleIcon, CloseIcon, ErrorIcon } from "@/components/icons";
 import { FormField } from "@/components/shared/form-field";
@@ -13,6 +12,7 @@ import {
   labelClass,
   secondaryButtonClass,
 } from "@/components/shared/ui";
+import { QuestionImageField } from "@/components/quiz/question-image-field";
 import { answerTheme } from "@/components/game/answer-theme";
 import { AnswerBadge } from "@/components/game/question-view";
 import {
@@ -28,7 +28,6 @@ import {
   changeType,
   formatTimeLimit,
   isSupportedType,
-  isValidImageUrl,
   validateQuestion,
   type QuestionContent,
 } from "@/lib/question-model";
@@ -139,34 +138,14 @@ export function QuestionEditor<T extends QuestionContent>({
         />
       </FormField>
 
-      <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
-        <FormField
-          id={`${idPrefix}-image`}
-          label="รูปประกอบ (ไม่บังคับ)"
-          hint="วางลิงก์รูปภาพที่ขึ้นต้นด้วย https://"
-          error={show("image") ? issues.image : undefined}
-        >
-          <input
-            type="url"
-            inputMode="url"
-            value={value.image ?? ""}
-            onChange={(e) => set({ image: e.target.value })}
-            onBlur={() => touch("image")}
-            placeholder="https://"
-            className={inputClass}
-          />
-        </FormField>
-        {value.image && isValidImageUrl(value.image.trim()) && (
-          <Image
-            src={value.image.trim()}
-            alt="ตัวอย่างรูปประกอบ"
-            width={160}
-            height={90}
-            unoptimized
-            className="h-20 w-auto rounded-lg border border-outline-variant/40 object-contain sm:mt-7"
-          />
-        )}
-      </div>
+      <QuestionImageField
+        id={`${idPrefix}-image`}
+        image={value.image}
+        imageId={value.imageId}
+        linkError={show("image") ? issues.image : undefined}
+        onChange={(next) => set(next)}
+        onBlur={() => touch("image")}
+      />
 
       {/* กลุ่มเลือกคำตอบที่ถูก (radio) — บังคับเลือก 1 ข้อ */}
       <fieldset
