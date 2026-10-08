@@ -36,9 +36,10 @@ export const MAX_OPTION_TEXT = 120;
 
 export const TIME_LIMIT_CHOICES = [5, 10, 20, 30, 45, 60, 90, 120];
 export const POINT_CHOICES = [
-  { value: 0, label: "ไม่คิดคะแนน" },
-  { value: 1000, label: "ปกติ (1,000)" },
-  { value: 2000, label: "สองเท่า (2,000)" },
+  { value: 500, label: "500" },
+  { value: 1000, label: "1,000" },
+  { value: 1500, label: "1,500" },
+  { value: 2000, label: "2,000" },
 ];
 export const DEFAULT_TIME_LIMIT = 20;
 export const DEFAULT_POINTS = 1000;
