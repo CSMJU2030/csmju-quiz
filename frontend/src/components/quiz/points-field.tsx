@@ -10,8 +10,8 @@ import { inputClass } from "@/components/shared/ui";
 import { formatNumber } from "@/lib/format";
 import { MAX_POINTS, POINT_CHOICES } from "@/lib/question-model";
 
-/** ความสูงของรายการ (3 แถว × 44px + ขอบ) */
-const LIST_HEIGHT = 150;
+/** ความสูงของรายการ (แถวละ 44px + ขอบ) */
+const LIST_HEIGHT = POINT_CHOICES.length * 44 + 16;
 
 /** ที่ว่างใต้ช่อง ถึงขอบของกล่องที่ตัดส่วนล้น (หรือขอบจอ) ที่ใกล้ที่สุด */
 function spaceBelow(el: HTMLElement | null) {
@@ -49,7 +49,6 @@ export function PointsField({
   const [upward, setUpward] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const listId = `${id}-list`;
-  const preset = POINT_CHOICES.find((p) => p.value === points);
 
   // ค่าเปลี่ยนจากข้างนอก (เช่น เปลี่ยนประเภทคำถาม · ยกเลิกการแก้ไข) → ตามค่าใหม่
   const [lastPoints, setLastPoints] = useState(points);
@@ -89,11 +88,7 @@ export function PointsField({
     <FormField
       id={id}
       label="คะแนน"
-      hint={
-        preset
-          ? `${preset.label} · พิมพ์เองได้ 0–${formatNumber(MAX_POINTS)}`
-          : `พิมพ์เองได้ 0–${formatNumber(MAX_POINTS)} หรือกดลูกศรเลือก`
-      }
+      hint={`พิมพ์เองได้ 0–${formatNumber(MAX_POINTS)} หรือกดลูกศรเลือก`}
       error={error}
     >
       <PointsCombo

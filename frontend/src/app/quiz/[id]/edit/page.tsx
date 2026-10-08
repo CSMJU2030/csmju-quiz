@@ -30,6 +30,7 @@ import {
   primaryButtonClass,
   tonalButtonClass,
   secondaryButtonClass,
+  dangerButtonClass,
 } from "@/components/shared/ui";
 import { formatTime } from "@/lib/format";
 import { ApiError, errorMessage, setUnsavedWork } from "@/lib/api";
@@ -79,6 +80,9 @@ export default function EditQuizPage() {
   const clearToast = useCallback(() => setToast(""), []);
   /** ลิงก์ที่ผู้ใช้กดไปขณะยังมีการแก้ที่ไม่ได้บันทึก */
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  /** เพิ่มเมื่อยกเลิกการแก้ไข — ให้ตัวแก้ไขแต่ละข้อเริ่มใหม่จากค่าที่บันทึกไว้ */
+  const [revision, setRevision] = useState(0);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -539,7 +543,7 @@ export default function EditQuizPage() {
             {questions.map((question, index) => {
               const issues = issueList(question);
               return (
-                <li key={question.id}>
+                <li key={`${question.id}-${revision}`}>
                   <article
                     id={`q-${question.id}`}
                     aria-labelledby={`q-${question.id}-title`}
@@ -668,14 +672,25 @@ export default function EditQuizPage() {
           className="sticky bottom-4 z-20 mx-auto flex max-w-xl flex-wrap items-center justify-between gap-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-3 shadow-md"
         >
           <p className="text-label-md text-on-surface">มีการแก้ไขที่ยังไม่ได้บันทึก</p>
-          <button
-            type="button"
-            onClick={() => handleSave("draft")}
-            disabled={isSaving}
-            className={primaryButtonClass}
-          >
-            บันทึก
-          </button>
+          {/* เรียง [ยืนยัน] [ยกเลิก] จากซ้าย ตาม ui-design-system.md ข้อ 8.1 */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleSave("draft")}
+              disabled={isSaving}
+              className={primaryButtonClass}
+            >
+              บันทึก
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmDiscard(true)}
+              disabled={isSaving}
+              className={secondaryButtonClass}
+            >
+              ยกเลิก
+            </button>
+          </div>
         </div>
       )}
 
@@ -720,6 +735,41 @@ export default function EditQuizPage() {
       >
         <p className="text-body-md text-on-surface-variant">
           ถ้าไปหน้าอื่นโดยไม่บันทึก การแก้ไขล่าสุดจะหายไป
+        </p>
+      </Modal>
+
+      <Modal
+        open={confirmDiscard}
+        title="ยกเลิกการแก้ไข"
+        onClose={() => setConfirmDiscard(false)}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmDiscard(false);
+                setCheckMode(null);
+                setSaveError("");
+                if (quiz) applyQuiz(quiz);
+                setRevision((n) => n + 1);
+                setToast("ยกเลิกการแก้ไขแล้ว กลับเป็นข้อมูลที่บันทึกล่าสุด");
+              }}
+              className={dangerButtonClass}
+            >
+              ยกเลิกการแก้ไข
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmDiscard(false)}
+              className={secondaryButtonClass}
+            >
+              แก้ไขต่อ
+            </button>
+          </>
+        }
+      >
+        <p className="text-body-md text-on-surface-variant">
+          การแก้ไขที่ยังไม่ได้บันทึกจะหายไป และกลับเป็นข้อมูลที่บันทึกล่าสุด
         </p>
       </Modal>
 
