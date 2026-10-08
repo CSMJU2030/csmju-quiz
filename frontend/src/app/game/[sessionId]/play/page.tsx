@@ -57,6 +57,7 @@ import {
 } from "@/lib/game-api";
 import { clamp } from "@/lib/play-engine";
 import { answerTheme } from "@/components/game/answer-theme";
+import { CountUp, RankRow } from "@/components/game/live-motion";
 import { playerLinks, useGameChannel } from "@/lib/game-channel";
 
 type IconName =
@@ -190,14 +191,16 @@ export default function PlayPage() {
   const score = me?.score ?? 0;
 
   // เก็บอันดับก่อนเริ่มข้อ — ปรับ state ระหว่าง render (แทนการอ่าน ref ระหว่าง render)
-  const [round, setRound] = useState<{ index: number; prevRanks: Record<string, number> }>({
-    index: -1,
-    prevRanks: {},
-  });
+  const [round, setRound] = useState<{
+    index: number;
+    prevRanks: Record<string, number>;
+    prevScores: Record<string, number>;
+  }>({ index: -1, prevRanks: {}, prevScores: {} });
   if (phase === "QUESTION" && round.index !== questionIndex) {
     setRound({
       index: questionIndex,
       prevRanks: Object.fromEntries(ranking.map((p) => [p.id, p.rank])),
+      prevScores: Object.fromEntries(ranking.map((p) => [p.id, p.score])),
     });
   }
   const myPrevRank = round.prevRanks[playerId] ?? myRank;
@@ -234,6 +237,12 @@ export default function PlayPage() {
     if (phase === "RESULT" && changedPhase) {
       play(isCorrect ? "correct" : "wrong");
       vibrate(isCorrect ? [35, 55, 35] : 200);
+    }
+
+    // ผลของข้อและอันดับแสดงบนสุด — เลื่อนกลับขึ้นไปให้เห็นทันที (มือถือมักเลื่อนลงมากดตัวเลือก)
+    if ((phase === "RESULT" || phase === "LEADERBOARD") && changedPhase) {
+      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
     }
 
     if (phase === "PODIUM" && changedPhase) {
@@ -540,131 +549,153 @@ export default function PlayPage() {
           />
         </div>
 
-        <section
-          key={`prompt-${questionIndex}`}
-          className="px-4 pt-6 fade-slide-up"
-          aria-live="polite"
-        >
-          <QuestionPrompt as="h1" prompt={question.prompt} image={question.imageUrl ?? undefined} />
-        </section>
+        {phase === "RESULT" && (
+          <ResultHero
+            key={`result-${questionIndex}`}
+            answered={answered}
+            correct={isCorrect}
+            gained={gained}
+            streak={streak}
+          />
+        )}
 
-        <div className="my-5 flex items-center justify-center gap-6">
-          {phase === "QUESTION" ? (
-            <TimerRing ratio={timeRatio} seconds={secondsLeft} urgent={urgent} />
-          ) : (
-            <div className="grid h-24 w-24 place-items-center rounded-full border-4 border-outline-variant/40 text-on-surface-variant">
-              {phase === "RESULT" ? (
-                isCorrect ? (
-                  <Icon name="check" size={24} className="animate-pop text-success" />
-                ) : answered ? (
-                  <Icon name="x" size={24} className="animate-shake text-error" />
-                ) : (
-                  <Icon name="clock" size={24} className="text-secondary" />
-                )
+        {phase === "LEADERBOARD" ? (
+          <LiveStanding
+            key={`standing-${questionIndex}`}
+            ranking={ranking}
+            meId={playerId}
+            myRank={myRank}
+            prevRank={myPrevRank}
+            score={score}
+            prevScore={round.prevScores[playerId] ?? score}
+            prevRanks={round.prevRanks}
+            prevScores={round.prevScores}
+          />
+        ) : (
+          <>
+            <section
+              key={`prompt-${questionIndex}`}
+              className="px-4 pt-6 fade-slide-up"
+              aria-live="polite"
+            >
+              <QuestionPrompt
+                as="h1"
+                prompt={question.prompt}
+                image={question.imageUrl ?? undefined}
+              />
+            </section>
+
+            <div className="my-5 flex items-center justify-center gap-6">
+              {phase === "QUESTION" ? (
+                <TimerRing ratio={timeRatio} seconds={secondsLeft} urgent={urgent} />
               ) : (
-                <Icon name="trophy" size={24} className="text-primary-container" />
+                <div className="grid h-24 w-24 place-items-center rounded-full border-4 border-outline-variant/40 text-on-surface-variant">
+                  {phase === "RESULT" ? (
+                    isCorrect ? (
+                      <Icon name="check" size={24} className="animate-pop text-success" />
+                    ) : answered ? (
+                      <Icon name="x" size={24} className="animate-shake text-error" />
+                    ) : (
+                      <Icon name="clock" size={24} className="text-secondary" />
+                    )
+                  ) : (
+                    <Icon name="trophy" size={24} className="text-primary-container" />
+                  )}
+                </div>
               )}
+
+              <div className="text-body-md text-on-surface-variant">
+                <p className="text-label-md">ตอบแล้ว</p>
+
+                <p className="text-headline-md font-bold tabular-nums text-on-surface font-display">
+                  {answeredCount}
+                  <span className="text-body-md text-secondary">/{totalPlayers || "–"}</span>
+                </p>
+
+                <div className="mt-1.5 h-1.5 w-28 overflow-hidden rounded-full bg-surface-variant">
+                  <div
+                    className="h-full bg-success transition-[width] duration-300"
+                    style={{
+                      width: `${(answeredCount / Math.max(totalPlayers, 1)) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
             </div>
-          )}
 
-          <div className="text-body-md text-on-surface-variant">
-            <p className="text-label-md">ตอบแล้ว</p>
-
-            <p className="text-headline-md font-bold tabular-nums text-on-surface font-display">
-              {answeredCount}
-              <span className="text-body-md text-secondary">/{totalPlayers || "–"}</span>
-            </p>
-
-            <div className="mt-1.5 h-1.5 w-28 overflow-hidden rounded-full bg-surface-variant">
-              <div
-                className="h-full bg-success transition-[width] duration-300"
-                style={{
-                  width: `${(answeredCount / Math.max(totalPlayers, 1)) * 100}%`,
-                }}
-              />
+            <div key={`options-${questionIndex}`} className="grid gap-3 p-4 md:grid-cols-2">
+              {options.map((option, index) => (
+                <div key={option.id} className={`grid fade-slide-up ${staggerClass(index + 1)}`}>
+                  <AnswerOptionButton
+                    option={option}
+                    index={index}
+                    mine={myOptionId === String(option.id)}
+                    showResult={showResult}
+                    locked={phase !== "QUESTION" || answered || remainingMs <= 0 || waitingToStart}
+                    onSelect={() => handleAnswer(String(option.id))}
+                    showKeyHint={phase === "QUESTION"}
+                  />
+                </div>
+              ))}
             </div>
-          </div>
-        </div>
+          </>
+        )}
 
-        <div key={`options-${questionIndex}`} className="grid gap-3 p-4 md:grid-cols-2">
-          {options.map((option, index) => (
-            <div key={option.id} className={`grid fade-slide-up ${staggerClass(index + 1)}`}>
-              <AnswerOptionButton
-                option={option}
-                index={index}
-                mine={myOptionId === String(option.id)}
-                showResult={showResult}
-                locked={phase !== "QUESTION" || answered || remainingMs <= 0 || waitingToStart}
-                onSelect={() => handleAnswer(String(option.id))}
-                showKeyHint={phase === "QUESTION"}
-              />
-            </div>
-          ))}
-        </div>
+        {phase !== "LEADERBOARD" && (
+          <div aria-live="polite" className="border-t border-outline-variant/40 bg-surface p-4">
+            {answerError && (
+              <p role="alert" className="mb-2 text-center text-label-md text-error">
+                {answerError}
+              </p>
+            )}
 
-        <div aria-live="polite" className="border-t border-outline-variant/40 bg-surface p-4">
-          {answerError && (
-            <p role="alert" className="mb-2 text-center text-label-md text-error">
-              {answerError}
-            </p>
-          )}
+            {phase === "QUESTION" && !answered && remainingMs > 0 && (
+              <p className="flex items-center justify-center gap-2 text-center text-body-md text-on-surface-variant">
+                <Icon name="target" size={16} />
+                เลือกคำตอบ หรือกดปุ่มตัวเลข 1–{options.length} บนแป้นพิมพ์
+              </p>
+            )}
 
-          {phase === "QUESTION" && !answered && remainingMs > 0 && (
-            <p className="flex items-center justify-center gap-2 text-center text-body-md text-on-surface-variant">
-              <Icon name="target" size={16} />
-              เลือกคำตอบ หรือกดปุ่มตัวเลข 1–{options.length} บนแป้นพิมพ์
-            </p>
-          )}
+            {phase === "QUESTION" && answered && !everyoneAnswered && (
+              <div className="text-center">
+                <p className="flex items-center justify-center gap-2 text-body-md font-bold text-on-surface">
+                  <Icon name="check" size={20} className="text-success" />
+                  ส่งคำตอบแล้ว
+                </p>
 
-          {phase === "QUESTION" && answered && !everyoneAnswered && (
-            <div className="text-center">
-              <p className="flex items-center justify-center gap-2 text-body-md font-bold text-on-surface">
+                <p className="mt-0.5 text-body-md text-on-surface-variant">
+                  รอผู้เล่นคนอื่น ({answeredCount}/{totalPlayers})
+                </p>
+
+                <AnsweredChips players={activePlayers} answeredIds={answeredIds} meId={playerId} />
+              </div>
+            )}
+
+            {phase === "QUESTION" && everyoneAnswered && (
+              <p className="flex items-center justify-center gap-2 text-center text-body-md font-bold text-on-surface">
                 <Icon name="check" size={20} className="text-success" />
-                ส่งคำตอบแล้ว
+                ทุกคนตอบครบแล้ว กำลังไปข้อถัดไป
               </p>
+            )}
 
-              <p className="mt-0.5 text-body-md text-on-surface-variant">
-                รอผู้เล่นคนอื่น ({answeredCount}/{totalPlayers})
+            {phase === "QUESTION" && !answered && remainingMs <= 0 && (
+              <p className="flex items-center justify-center gap-2 text-center text-body-md font-bold text-error">
+                <Icon name="clock" size={20} />
+                หมดเวลา กรุณารอเฉลย
               </p>
+            )}
 
-              <AnsweredChips players={activePlayers} answeredIds={answeredIds} meId={playerId} />
-            </div>
-          )}
-
-          {phase === "QUESTION" && everyoneAnswered && (
-            <p className="flex items-center justify-center gap-2 text-center text-body-md font-bold text-on-surface">
-              <Icon name="check" size={20} className="text-success" />
-              ทุกคนตอบครบแล้ว กำลังไปข้อถัดไป
-            </p>
-          )}
-
-          {phase === "QUESTION" && !answered && remainingMs <= 0 && (
-            <p className="flex items-center justify-center gap-2 text-center text-body-md font-bold text-error">
-              <Icon name="clock" size={20} />
-              หมดเวลา กรุณารอเฉลย
-            </p>
-          )}
-
-          {phase === "RESULT" && (
-            <div className="fade-slide-up">
-              <ResultBar
-                answered={answered}
-                correct={isCorrect}
-                gained={gained}
-                streak={streak}
-                distribution={distribution}
-                options={options}
-                totalAnswered={answeredCount}
-              />
-            </div>
-          )}
-
-          {phase === "LEADERBOARD" && (
-            <div className="fade-slide-up">
-              <MiniBoard ranking={ranking} meId={playerId} prevRank={myPrevRank} myRank={myRank} />
-            </div>
-          )}
-        </div>
+            {phase === "RESULT" && (
+              <div className="fade-slide-up">
+                <AnswerDistribution
+                  distribution={distribution}
+                  options={options}
+                  totalAnswered={answeredCount}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {countdownValue !== null && countdownValue > 0 && (
           <div
@@ -747,131 +778,179 @@ function AnsweredChips({
   );
 }
 
-function ResultBar({
+/** ผลของข้อนี้ — แสดงบนสุดของการ์ด เด้งเข้าพร้อมคะแนนที่นับขึ้น */
+function ResultHero({
   answered,
   correct,
   gained,
   streak,
-  distribution,
-  options,
-  totalAnswered,
 }: {
   answered: boolean;
   correct: boolean;
   gained: number;
   streak: number;
+}) {
+  const tone = correct
+    ? "bg-success/10 text-on-surface"
+    : answered
+      ? "bg-error/10 text-error"
+      : "bg-surface-variant text-on-surface-variant";
+  return (
+    <section
+      aria-live="polite"
+      className={`mx-4 mt-4 flex items-center gap-4 rounded-xl px-5 py-4 fade-slide-up ${tone}`}
+    >
+      <span
+        className={`grid h-14 w-14 shrink-0 place-items-center rounded-full bg-surface-container-lowest result-pop ${
+          correct ? "text-success" : answered ? "text-error animate-shake" : "text-secondary"
+        }`}
+      >
+        <Icon name={correct ? "check" : answered ? "x" : "clock"} size={32} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="font-display text-headline-md">
+          {correct ? "ถูกต้อง!" : answered ? "ยังไม่ถูก" : "หมดเวลา"}
+        </p>
+        {correct && streak >= 2 && (
+          <p className="mt-0.5 flex items-center gap-1.5 text-label-sm text-on-surface stagger-1 fade-slide-up">
+            <Icon name="fire" size={16} className="text-brand-amber" />
+            ตอบถูกติดกัน {streak} ข้อ
+          </p>
+        )}
+        {!correct && <p className="mt-0.5 text-label-sm text-on-surface-variant">ดูเฉลยด้านล่าง</p>}
+      </div>
+      {correct && gained > 0 && (
+        <CountUp
+          to={gained}
+          format={(n) => `+${formatNumber(n)}`}
+          className="shrink-0 font-display text-headline-md text-primary-container tabular-nums"
+        />
+      )}
+    </section>
+  );
+}
+
+function AnswerDistribution({
+  distribution,
+  options,
+  totalAnswered,
+}: {
   distribution: Record<string, number>;
   options: QuestionOption[];
   totalAnswered: number;
 }) {
   return (
-    <div className="text-center">
-      <div
-        className={`flex items-center justify-center gap-2 text-body-lg font-bold ${
-          correct ? "text-on-surface" : answered ? "text-error" : "text-on-surface-variant"
-        }`}
-      >
-        <Icon
-          name={correct ? "check" : answered ? "x" : "clock"}
-          size={24}
-          className={correct ? "text-success" : undefined}
-        />
-
-        <span>{correct ? "ถูกต้อง" : answered ? "ยังไม่ถูก" : "หมดเวลา"}</span>
-
-        {correct && gained > 0 && (
-          <span className="text-primary-container">+{formatNumber(gained)} คะแนน</span>
-        )}
-      </div>
-
-      {correct && streak >= 2 && (
-        <p className="mt-1 flex items-center justify-center gap-1.5 text-label-sm font-bold text-on-surface">
-          <Icon name="fire" size={16} className="text-brand-amber" />
-          ตอบถูกติดกัน {streak} ข้อ
-        </p>
-      )}
-
-      <div className="mx-auto mt-3 max-w-sm space-y-1.5">
-        {options.map((o, i) => {
-          const count = distribution[String(o.id)] ?? 0;
-
-          const pct = (count / Math.max(totalAnswered, 1)) * 100;
-
-          return (
-            <div key={o.id} className="flex items-center gap-2">
-              <AnswerBadge index={i} />
-              <span className="sr-only">ตัวเลือกที่ {i + 1}</span>
-
-              <div className="h-3 flex-1 overflow-hidden rounded bg-surface-variant">
-                <div
-                  className={`h-full ${answerTheme(i).fill} transition duration-300`}
-                  style={{
-                    width: `${pct}%`,
-                  }}
-                />
-              </div>
-
-              <span className="w-6 text-right text-caption tabular-nums text-on-surface-variant">
-                {count}
-              </span>
+    <div className="mx-auto max-w-sm space-y-1.5">
+      <p className="mb-2 text-center text-label-md text-on-surface-variant">คำตอบของทุกคน</p>
+      {options.map((o, i) => {
+        const count = distribution[String(o.id)] ?? 0;
+        const pct = (count / Math.max(totalAnswered, 1)) * 100;
+        return (
+          <div key={o.id} className="flex items-center gap-2">
+            <AnswerBadge index={i} />
+            <span className="sr-only">ตัวเลือกที่ {i + 1}</span>
+            <div className="h-3 flex-1 overflow-hidden rounded bg-surface-variant">
+              <div
+                className={`h-full origin-left ${answerTheme(i).fill} bar-grow`}
+                style={{ width: `${pct}%` }}
+              />
             </div>
-          );
-        })}
-      </div>
+            <span className="w-6 text-right text-caption tabular-nums text-on-surface-variant">
+              {count}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-function MiniBoard({
+type RankingRow = {
+  id: string;
+  nickname: string;
+  avatarIndex: number | null;
+  score: number;
+  rank: number;
+};
+
+/** ระยะห่างระหว่างแถวของตารางอันดับ (h-14 = 56px + space-y-2 = 8px) */
+const ROW_PITCH = 64;
+const TOP_N = 5;
+
+/** อันดับหลังจบข้อ — อันดับและคะแนนของฉันอยู่บนสุด แถวเลื่อนจากอันดับเดิมเข้าที่ */
+function LiveStanding({
   ranking,
   meId,
   myRank,
   prevRank,
+  score,
+  prevScore,
+  prevRanks,
+  prevScores,
 }: {
-  ranking: {
-    id: string;
-    nickname: string;
-    avatarIndex: number | null;
-    score: number;
-    rank: number;
-  }[];
+  ranking: RankingRow[];
   meId: string;
   myRank: number;
   prevRank: number;
+  score: number;
+  prevScore: number;
+  prevRanks: Record<string, number>;
+  prevScores: Record<string, number>;
 }) {
   const delta = prevRank - myRank;
-
-  const inTop = ranking.slice(0, 5).some((p) => p.id === meId);
-
+  const top = ranking.slice(0, TOP_N);
   const meRow = ranking.find((p) => p.id === meId);
+  const inTop = top.some((p) => p.id === meId);
+  // ลำดับในรายการก่อนข้อนี้ (เฉพาะที่อยู่ในช่วงที่แสดง) — ไม่มี = เพิ่งขึ้นมา
+  const prevOrder = [...ranking]
+    .filter((p) => prevRanks[p.id] !== undefined)
+    .sort((a, b) => prevRanks[a.id] - prevRanks[b.id])
+    .map((p) => p.id);
+  const prevIndexOf = (id: string) => {
+    const i = prevOrder.indexOf(id);
+    return i >= 0 && i < TOP_N ? i : null;
+  };
 
   return (
-    <div>
-      <p className="mb-2 flex items-center justify-center gap-2 text-center text-label-md font-bold text-on-surface-variant">
-        <Icon name="trophy" size={16} className="text-primary-container" />
-        อันดับตอนนี้
-        {delta !== 0 && (
-          <span
-            className={
-              delta > 0 ? "flex items-center text-on-surface" : "flex items-center text-error"
-            }
-          >
-            <Icon
-              name={delta > 0 ? "arrowUp" : "arrowDown"}
-              size={16}
-              className={delta > 0 ? "text-success" : undefined}
-            />
-            <span className="sr-only">{delta > 0 ? "อันดับขึ้น" : "อันดับลง"}</span>
-            {Math.abs(delta)}
-          </span>
-        )}
-      </p>
+    <section aria-labelledby="standing-title" className="px-4 pb-5 pt-6">
+      <div className="mx-auto max-w-md rounded-2xl brand-gradient px-5 py-5 text-center text-on-primary shadow-md result-pop">
+        <p id="standing-title" className="text-label-md text-on-primary/80">
+          อันดับของคุณตอนนี้
+        </p>
+        <div className="mt-1 flex items-center justify-center gap-3">
+          <p className="font-display text-display-lg tabular-nums">
+            {myRank > 0 ? <CountUp to={myRank} from={prevRank || myRank} /> : "–"}
+          </p>
+          {delta !== 0 && (
+            <span
+              className={`inline-flex items-center gap-1 rounded-full bg-surface-container-lowest px-2.5 py-1 text-label-md tabular-nums fade-slide-up stagger-2 ${
+                delta > 0 ? "text-success" : "text-error"
+              }`}
+            >
+              <Icon name={delta > 0 ? "arrowUp" : "arrowDown"} size={16} />
+              <span className="sr-only">{delta > 0 ? "อันดับขึ้น" : "อันดับลง"}</span>
+              {Math.abs(delta)}
+            </span>
+          )}
+        </div>
+        <p className="mt-1 text-body-md text-on-primary/90">
+          <CountUp to={score} from={prevScore} format={formatNumber} className="tabular-nums" />{" "}
+          คะแนน
+        </p>
+      </div>
 
-      <ol className="mx-auto max-w-sm space-y-1">
-        {ranking.slice(0, 5).map((p, i) => (
-          <li
+      <h2 className="mb-3 mt-6 flex items-center justify-center gap-2 text-label-md text-on-surface-variant">
+        <Icon name="trophy" size={16} className="text-primary-container" />
+        {TOP_N} อันดับแรก
+      </h2>
+      <ol className="mx-auto max-w-md space-y-2">
+        {top.map((p, i) => (
+          <RankRow
             key={p.id}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-label-md fade-slide-up ${staggerClass(i)} ${
+            index={i}
+            prevIndex={prevIndexOf(p.id)}
+            pitch={ROW_PITCH}
+            className={`flex h-14 items-center gap-3 rounded-lg px-3 text-label-md ${
               p.id === meId
                 ? "bg-primary-container font-bold text-on-primary"
                 : "border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant"
@@ -880,7 +959,6 @@ function MiniBoard({
             <span className="flex h-6 w-6 shrink-0 items-center justify-center font-bold">
               <RankIcon place={p.rank} />
             </span>
-
             <PlayerIdentity
               avatarIndex={p.avatarIndex}
               nickname={p.nickname}
@@ -888,19 +966,22 @@ function MiniBoard({
               isMe={p.id === meId}
               inverse={p.id === meId}
               nameClassName="text-label-md"
-              className="flex-1"
+              className="min-w-0 flex-1"
             />
-
-            <span className="tabular-nums">{formatNumber(p.score)}</span>
-          </li>
+            <CountUp
+              to={p.score}
+              from={prevScores[p.id] ?? p.score}
+              format={formatNumber}
+              className="tabular-nums"
+            />
+          </RankRow>
         ))}
 
         {!inTop && meRow && (
-          <li className="flex items-center gap-3 rounded-lg bg-primary-container px-3 py-2 text-label-md text-on-primary">
+          <li className="flex h-14 items-center gap-3 rounded-lg bg-primary-container px-3 text-label-md text-on-primary fade-slide-up stagger-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center">
               <RankIcon place={meRow.rank} />
             </span>
-
             <PlayerIdentity
               avatarIndex={meRow.avatarIndex}
               nickname={meRow.nickname}
@@ -908,14 +989,13 @@ function MiniBoard({
               isMe
               inverse
               nameClassName="text-label-md"
-              className="flex-1"
+              className="min-w-0 flex-1"
             />
-
             <span className="tabular-nums">{formatNumber(meRow.score)}</span>
           </li>
         )}
       </ol>
-    </div>
+    </section>
   );
 }
 
