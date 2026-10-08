@@ -86,3 +86,8 @@ export function formatFileStamp(value: string | number | Date): string | null {
     parts.find((p) => p.type === type)?.value ?? "";
   return `${get("year")}${get("month")}${get("day")}-${get("hour")}${get("minute")}`;
 }
+
+/** ตัวนับตัวอักษรใต้ช่อง — แสดงเมื่อใช้ไปแล้ว 80% ขึ้นไป (ไม่ให้ฟอร์มรก) */
+export function charCountHint(length: number, max: number): string | undefined {
+  return length >= max * 0.8 ? `${length}/${max} ตัวอักษร` : undefined;
+}

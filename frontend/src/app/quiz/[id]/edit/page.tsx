@@ -33,7 +33,7 @@ import {
   secondaryButtonClass,
   dangerButtonClass,
 } from "@/components/shared/ui";
-import { formatTime } from "@/lib/format";
+import { charCountHint, formatTime } from "@/lib/format";
 import { ApiError, errorMessage, setUnsavedWork } from "@/lib/api";
 import { bankItemsToQuestions, saveQuestionToBank, type BankItem } from "@/lib/question-bank";
 import { cloneContent, createQuestion, issueList, normalizeContent } from "@/lib/question-model";
@@ -489,7 +489,7 @@ export default function EditQuizPage() {
           id="edit-title"
           label="ชื่อแบบทดสอบ"
           required
-          hint={`${title.length}/${MAX_TITLE} ตัวอักษร`}
+          hint={charCountHint(title.length, MAX_TITLE)}
           error={
             (showErrors || titleTouched) && !title.trim() ? "กรุณากรอกชื่อแบบทดสอบ" : undefined
           }
@@ -506,7 +506,7 @@ export default function EditQuizPage() {
         <FormField
           id="edit-description"
           label="คำอธิบาย (ไม่บังคับ)"
-          hint={`${description.length}/${MAX_DESCRIPTION} ตัวอักษร`}
+          hint={charCountHint(description.length, MAX_DESCRIPTION)}
         >
           <textarea
             value={description}

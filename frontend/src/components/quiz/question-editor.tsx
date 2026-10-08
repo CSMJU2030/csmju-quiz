@@ -37,7 +37,7 @@ import {
   validateQuestion,
   type QuestionContent,
 } from "@/lib/question-model";
-import { formatNumber } from "@/lib/format";
+import { charCountHint, formatNumber } from "@/lib/format";
 import { newId } from "@/lib/utils";
 import type { Difficulty, QuestionOption } from "@/types/quiz";
 import { PointsField } from "@/components/quiz/points-field";
@@ -90,8 +90,6 @@ export function QuestionEditor<T extends QuestionContent>({
     ...(showMeta ? [DIFFICULTY_LABEL[value.difficulty ?? "MEDIUM"]] : []),
     ...(showMeta && value.tags?.length ? [value.tags.map((t) => `#${t}`).join(" ")] : []),
   ];
-  // ตัวนับตัวอักษรขึ้นเมื่อใกล้เต็ม (80%)
-  const nearLimit = value.prompt.length >= MAX_PROMPT * 0.8;
 
   const optionsError = show("options") ? issues.options : undefined;
   const correctError = show("correct") || show("options") ? issues.correct : undefined;
@@ -112,7 +110,7 @@ export function QuestionEditor<T extends QuestionContent>({
         id={`${idPrefix}-prompt`}
         label={isTrueFalse ? "ข้อความให้ตัดสินว่าถูกหรือผิด" : "โจทย์คำถาม"}
         required
-        hint={nearLimit ? `${value.prompt.length}/${MAX_PROMPT} ตัวอักษร` : undefined}
+        hint={charCountHint(value.prompt.length, MAX_PROMPT)}
         error={show("prompt") ? issues.prompt : undefined}
       >
         <textarea
