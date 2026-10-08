@@ -340,7 +340,7 @@ export default function QuestionBankPage() {
               setLevel(e.target.value as Difficulty | "");
               setPage(1);
             }}
-            className={`${inputClass} h-12`}
+            className={inputClass}
           >
             <option value="">ทุกระดับ</option>
             {LEVELS.map((d) => (
