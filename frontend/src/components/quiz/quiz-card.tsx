@@ -55,7 +55,9 @@ export default function QuizCard({ quiz, onDelete, onStatusChange, busy }: QuizC
     <article className="flex flex-col justify-between rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-6 transition hover:shadow-sm">
       <div>
         <div className="flex items-center justify-between gap-2">
-          <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
+          <StatusBadge tone={status.tone}>
+            <span className="whitespace-nowrap">{status.label}</span>
+          </StatusBadge>
           <span className="text-label-sm text-secondary tabular-nums">
             {formatNumber(summary.count)} คำถาม
           </span>
@@ -86,8 +88,8 @@ export default function QuizCard({ quiz, onDelete, onStatusChange, busy }: QuizC
         </p>
       </div>
 
-      <div className="mt-6 flex items-center justify-between gap-2 border-t border-outline-variant/40 pt-4">
-        <div className="flex items-center gap-1">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/40 pt-4">
+        <div className="flex flex-wrap items-center gap-1">
           <Link
             href={`/quiz/${quiz.id}/edit`}
             className={iconButtonClass}
