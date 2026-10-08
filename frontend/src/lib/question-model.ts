@@ -58,6 +58,8 @@ export interface QuestionContent {
   timeLimit: number;
   points: number;
   image?: string;
+  /** id ของรูปที่อัปโหลด (ดู Question.imageId) */
+  imageId?: string;
   tags?: string[];
   difficulty?: Difficulty;
 }
@@ -151,7 +153,7 @@ export function validateQuestion(content: QuestionContent): QuestionIssues {
       if (new Set(texts).size !== texts.length) issues.options = "มีตัวเลือกที่ซ้ำกัน";
     }
   }
-  if (content.image?.trim() && !isValidImageUrl(content.image.trim())) {
+  if (!content.imageId && content.image?.trim() && !isValidImageUrl(content.image.trim())) {
     issues.image = "ลิงก์รูปภาพต้องขึ้นต้นด้วย https://";
   }
   if (options.filter((o) => o.isCorrect).length !== 1) {
@@ -174,6 +176,7 @@ export function normalizeContent<T extends QuestionContent>(content: T): T {
     ...content,
     prompt: content.prompt.trim(),
     image: content.image?.trim() || undefined,
+    imageId: content.image?.trim() ? content.imageId : undefined,
     options: content.options.map((o) => ({ ...o, text: o.text.trim() })),
     tags: (content.tags ?? []).map((t) => t.trim()).filter(Boolean),
   };
@@ -188,6 +191,7 @@ export function cloneContent(content: QuestionContent): QuestionContent {
     timeLimit: content.timeLimit,
     points: content.points,
     image: content.image,
+    imageId: content.imageId,
     tags: [...(content.tags ?? [])],
     difficulty: content.difficulty,
   };

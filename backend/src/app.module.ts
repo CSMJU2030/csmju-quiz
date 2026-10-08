@@ -5,6 +5,7 @@ import { AppConfigModule } from './config/config.module';
 import { GameModule } from './game/game.module';
 import { HealthController } from './health/health.controller';
 import { HistoryModule } from './history/history.module';
+import { ImagesModule } from './images/images.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { GameReportsModule } from './reports/game-reports.module';
@@ -19,6 +20,7 @@ import { GameReportsModule } from './reports/game-reports.module';
     GameModule,
     GameReportsModule,
     HistoryModule,
+    ImagesModule,
   ],
   controllers: [HealthController],
 })

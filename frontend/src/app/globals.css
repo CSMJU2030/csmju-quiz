@@ -217,6 +217,39 @@
 }
 
 /* ── Entrance animation (ข้อ 3.6) ───────────────────── */
+/* แถวอันดับเลื่อนจากตำแหน่งเดิม (--rank-from) เข้าที่ — 480ms ตามข้อ 3.6 */
+@keyframes rank-move {
+  from {
+    transform: translateY(var(--rank-from, 0));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@utility rank-move {
+  animation: rank-move 480ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* แท่งสัดส่วนคำตอบยืดจากซ้าย */
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@utility bar-grow {
+  animation: bar-grow 480ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ผลลัพธ์ของข้อ: เด้งเข้า (ใช้ pop ที่มีอยู่ แต่ช้ากว่าเล็กน้อยให้เห็นชัดบนมือถือ) */
+@utility result-pop {
+  animation: pop 300ms ease-out both;
+}
+
 @utility fade-slide-up {
   animation: fade-slide-up 300ms ease-out both;
 }

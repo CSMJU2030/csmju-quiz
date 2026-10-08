@@ -21,11 +21,20 @@ import {
   countQuizzes,
   deleteQuiz,
   listQuizPage,
+  setQuizStatus,
   type QuizListItem,
   type QuizListSort,
   type QuizListStatus,
 } from "@/lib/quiz-store";
 import { QUIZ_DELETE_CONSEQUENCE } from "@/lib/quiz-status";
+import type { QuizStatus } from "@/types/quiz";
+
+/** ข้อความแจ้งหลังเปลี่ยนสถานะจากการ์ด — ตามสถานะเดิม → ใหม่ */
+function statusNotice(from: QuizStatus, to: QuizStatus, name: string) {
+  if (to === "ARCHIVED") return `เก็บถาวร “${name}” แล้ว ดูได้ที่แท็บเก็บถาวร`;
+  if (from === "ARCHIVED") return `กู้คืน “${name}” เป็นแบบร่างแล้ว`;
+  return `ยกเลิกการเผยแพร่ “${name}” แล้ว กลับเป็นแบบร่าง`;
+}
 
 type TabStatus = "ALL" | "PUBLISHED" | "DRAFT" | "ARCHIVED";
 
@@ -54,6 +63,7 @@ export default function QuizListPage() {
   const [counts, setCounts] = useState<Record<TabStatus, number> | null>(null);
   const [deletingQuiz, setDeletingQuiz] = useState<QuizListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [statusBusyId, setStatusBusyId] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
   const [actionError, setActionError] = useState("");
   const clearNotice = useCallback(() => setNotice(""), []);
@@ -136,6 +146,21 @@ export default function QuizListPage() {
       setActionError(`ลบแบบทดสอบไม่สำเร็จ: ${errorMessage(err)}`);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleStatusChange = async (quiz: QuizListItem, next: QuizStatus) => {
+    if (statusBusyId) return;
+    setStatusBusyId(quiz.id);
+    setActionError("");
+    try {
+      await setQuizStatus(quiz.id, next);
+      setNotice(statusNotice(quiz.status, next, quiz.title || "ไม่มีชื่อ"));
+      setReload((n) => n + 1);
+    } catch (err) {
+      setActionError(`เปลี่ยนสถานะไม่สำเร็จ: ${errorMessage(err)}`);
+    } finally {
+      setStatusBusyId(null);
     }
   };
 
@@ -294,7 +319,13 @@ export default function QuizListPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-6">
             {quizzes.map((quiz) => (
-              <QuizCard key={quiz.id} quiz={quiz} onDelete={() => setDeletingQuiz(quiz)} />
+              <QuizCard
+                key={quiz.id}
+                quiz={quiz}
+                onDelete={() => setDeletingQuiz(quiz)}
+                onStatusChange={(_, next) => void handleStatusChange(quiz, next)}
+                busy={statusBusyId === quiz.id}
+              />
             ))}
           </div>
           {meta && <Pagination meta={meta} onPage={setPage} label="แบบทดสอบ" />}

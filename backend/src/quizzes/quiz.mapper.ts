@@ -1,4 +1,5 @@
 import { iso } from '../common/iso';
+import { displayImageUrl } from '../images/image-url';
 import { questionIssues } from '../questions/question-rules';
 import type { QuestionView } from '../questions/question.view';
 import type { QuizSummaryView, QuizView } from './quiz.dto';
@@ -11,6 +12,7 @@ type QuestionRow = {
   type: string;
   prompt: string;
   imageUrl: string | null;
+  imageId: string | null;
   timeLimit: number;
   points: number;
   tags: string[];
@@ -40,7 +42,8 @@ export function toQuestionView(q: QuestionRow): QuestionView {
     order: q.position,
     type: q.type,
     prompt: q.prompt,
-    imageUrl: q.imageUrl,
+    imageUrl: displayImageUrl(q),
+    imageId: q.imageId,
     timeLimit: q.timeLimit,
     points: q.points,
     tags: q.tags,
