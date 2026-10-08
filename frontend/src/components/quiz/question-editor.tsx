@@ -22,7 +22,6 @@ import {
   MAX_OPTION_TEXT,
   MAX_PROMPT,
   MIN_OPTIONS,
-  POINT_CHOICES,
   QUESTION_TYPES,
   TIME_LIMIT_CHOICES,
   changeType,
@@ -34,6 +33,7 @@ import {
 } from "@/lib/question-model";
 import { newId } from "@/lib/utils";
 import type { Difficulty, QuestionOption } from "@/types/quiz";
+import { PointsField } from "@/components/quiz/points-field";
 
 interface QuestionEditorProps<T extends QuestionContent> {
   /** prefix ของ id ในฟอร์ม ต้องไม่ซ้ำในหน้าเดียวกัน */
@@ -325,22 +325,13 @@ export function QuestionEditor<T extends QuestionContent>({
               ))}
           </select>
         </FormField>
-        <FormField id={`${idPrefix}-points`} label="คะแนน">
-          <select
-            value={value.points}
-            onChange={(e) => set({ points: Number(e.target.value) })}
-            className={inputClass}
-          >
-            {POINT_CHOICES.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-            {!POINT_CHOICES.some((p) => p.value === value.points) && (
-              <option value={value.points}>{value.points.toLocaleString("th-TH")}</option>
-            )}
-          </select>
-        </FormField>
+        <PointsField
+          id={`${idPrefix}-points`}
+          points={value.points}
+          error={show("points") ? issues.points : undefined}
+          onChange={(points) => set({ points })}
+          onBlur={() => touch("points")}
+        />
 
         {showMeta && (
           <>

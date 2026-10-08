@@ -42,6 +42,8 @@ export const POINT_CHOICES = [
 ];
 export const DEFAULT_TIME_LIMIT = 20;
 export const DEFAULT_POINTS = 1000;
+/** คะแนนสูงสุดต่อข้อ — ตรงกับ MAX_POINTS ของ backend (questions/question-rules.ts) */
+export const MAX_POINTS = 5000;
 
 export const DIFFICULTIES: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
 export const DIFFICULTY_LABEL: Record<Difficulty, string> = {
@@ -117,6 +119,7 @@ export interface QuestionIssues {
   correct?: string;
   type?: string;
   image?: string;
+  points?: string;
 }
 
 /** รับเฉพาะลิงก์ https เพื่อความปลอดภัย (ไม่รับ data:, javascript:, http:) */
@@ -153,6 +156,9 @@ export function validateQuestion(content: QuestionContent): QuestionIssues {
   }
   if (content.image?.trim() && !isValidImageUrl(content.image.trim())) {
     issues.image = "ลิงก์รูปภาพต้องขึ้นต้นด้วย https://";
+  }
+  if (!Number.isInteger(content.points) || content.points < 0 || content.points > MAX_POINTS) {
+    issues.points = `คะแนนต้องเป็นจำนวนเต็ม 0–${MAX_POINTS.toLocaleString("th-TH")}`;
   }
   if (options.filter((o) => o.isCorrect).length !== 1) {
     issues.correct = "กรุณาเลือกคำตอบที่ถูก 1 ข้อ";
