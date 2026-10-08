@@ -42,6 +42,8 @@ export function QuestionImageField({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [broken, setBroken] = useState<string | null>(null);
+  /** ไม่มีรูป = ซ่อนไว้หลังปุ่ม "เพิ่มรูปประกอบ" ให้ฟอร์มแต่ละข้อสั้น */
+  const [open, setOpen] = useState(false);
   const hintId = useId();
   const errorId = useId();
 
@@ -49,6 +51,7 @@ export function QuestionImageField({
   const uploaded = Boolean(imageId && url);
   const previewable = url && (uploaded || isValidImageUrl(url)) && broken !== url;
   const error = uploadError || (uploaded ? "" : linkError) || "";
+  const expanded = open || Boolean(url) || Boolean(error);
 
   async function pick(file: File | undefined) {
     if (!file) return;
@@ -88,6 +91,24 @@ export function QuestionImageField({
     </button>
   );
 
+  if (!expanded) {
+    return (
+      <div>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(true);
+            window.setTimeout(() => document.getElementById(id)?.focus(), 0);
+          }}
+          className={secondaryButtonClass}
+        >
+          <PhotoCameraIcon className="h-4 w-4" />
+          เพิ่มรูปประกอบ
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       <label htmlFor={uploaded ? `${id}-upload` : id} className={labelClass}>
@@ -113,6 +134,7 @@ export function QuestionImageField({
             type="button"
             onClick={() => {
               setUploadError("");
+              setOpen(false);
               onChange({ image: undefined, imageId: undefined });
             }}
             className={iconDangerButtonClass}
@@ -139,7 +161,38 @@ export function QuestionImageField({
             aria-invalid={error ? true : undefined}
             className={`${inputClass} min-w-0 flex-1 ${error ? "input-error" : ""}`}
           />
-          {uploadButton}
+          <div className="flex gap-2">
+            {uploadButton}
+            {!url && (
+              <button
+                type="button"
+                onClick={() => {
+                  setUploadError("");
+                  setOpen(false);
+                }}
+                className={iconDangerButtonClass}
+                aria-label="ไม่ใส่รูปประกอบ"
+                title="ไม่ใส่รูป"
+              >
+                <CloseIcon className="h-5 w-5" />
+              </button>
+            )}
+            {url && (
+              <button
+                type="button"
+                onClick={() => {
+                  setUploadError("");
+                  setOpen(false);
+                  onChange({ image: undefined, imageId: undefined });
+                }}
+                className={iconDangerButtonClass}
+                aria-label="นำรูปประกอบออก"
+                title="นำรูปออก"
+              >
+                <CloseIcon className="h-5 w-5" />
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -162,7 +215,7 @@ export function QuestionImageField({
           height={180}
           unoptimized
           onError={() => setBroken(url)}
-          className="h-32 w-auto max-w-full rounded-lg border border-outline-variant/40 object-contain"
+          className="h-24 w-auto max-w-full rounded-lg border border-outline-variant/40 object-contain"
         />
       )}
       {url && broken === url && (
