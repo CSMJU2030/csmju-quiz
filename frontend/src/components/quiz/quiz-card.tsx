@@ -40,9 +40,19 @@ interface QuizCardProps {
   onStatusChange?: (id: string, next: QuizStatus) => void;
   /** กำลังบันทึกการเปลี่ยนสถานะของการ์ดนี้ */
   busy?: boolean;
+  /** ติ๊กเลือกเพื่อลบหลายชุด — ไม่ส่ง = ไม่มีช่องติ๊ก */
+  selected?: boolean;
+  onSelect?: (checked: boolean) => void;
 }
 
-export default function QuizCard({ quiz, onDelete, onStatusChange, busy }: QuizCardProps) {
+export default function QuizCard({
+  quiz,
+  onDelete,
+  onStatusChange,
+  busy,
+  selected = false,
+  onSelect,
+}: QuizCardProps) {
   const title = quiz.title || "ไม่มีชื่อแบบทดสอบ";
   const status = quizStatus(quiz);
   const summary = {
@@ -52,13 +62,30 @@ export default function QuizCard({ quiz, onDelete, onStatusChange, busy }: QuizC
   };
 
   return (
-    <article className="flex flex-col justify-between rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-6 transition hover:shadow-sm">
+    <article
+      className={`flex flex-col justify-between rounded-xl border bg-surface-container-lowest p-5 transition hover:shadow-sm ${
+        selected
+          ? "border-primary-container ring-2 ring-primary-container/30"
+          : "border-outline-variant/40"
+      }`}
+    >
       <div>
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {onSelect && (
+            <label className="-my-2 -ml-3 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg has-focus-visible:outline-2 has-focus-visible:outline-accent">
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={(e) => onSelect(e.target.checked)}
+                aria-label={`เลือก ${title}`}
+                className="h-5 w-5 accent-primary"
+              />
+            </label>
+          )}
           <StatusBadge tone={status.tone}>
             <span className="whitespace-nowrap">{status.label}</span>
           </StatusBadge>
-          <span className="text-label-sm text-secondary tabular-nums">
+          <span className="ml-auto text-label-sm text-secondary tabular-nums">
             {formatNumber(summary.count)} คำถาม
           </span>
         </div>
