@@ -287,11 +287,11 @@ export default function CreateGamePage() {
       ) : (
         <div className="grid gap-8 xl:grid-cols-3">
           <section aria-labelledby="pick-quiz" className={`${cardClass} xl:col-span-2`}>
-            <div className="flex flex-col gap-4 border-b border-outline-variant/40 px-6 py-5 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-4 border-b border-outline-variant/40 px-6 py-5 lg:flex-row lg:items-end lg:justify-between">
               <h2 id="pick-quiz" className="font-display text-headline-md text-on-surface">
                 เลือกชุดคำถาม
               </h2>
-              <div className="space-y-2 md:w-72">
+              <div className="space-y-2 lg:w-72">
                 <label htmlFor="game-quiz-search" className={labelClass}>
                   ค้นหา
                 </label>

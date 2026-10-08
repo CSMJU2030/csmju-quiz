@@ -310,7 +310,7 @@ export default function QuestionBankPage() {
             />
           </div>
         </div>
-        <div className="space-y-2 md:w-56">
+        <div className="space-y-2 lg:w-56">
           <label htmlFor="bank-tag" className={labelClass}>
             แท็ก
           </label>
@@ -329,7 +329,7 @@ export default function QuestionBankPage() {
             ))}
           </datalist>
         </div>
-        <div className="space-y-2 md:w-48">
+        <div className="space-y-2 lg:w-48">
           <label htmlFor="bank-level" className={labelClass}>
             ระดับความยาก
           </label>
@@ -430,7 +430,7 @@ export default function QuestionBankPage() {
                         <StatusBadge tone={DIFFICULTY_TONE[item.difficulty]}>
                           {DIFFICULTY_LABEL[item.difficulty]}
                         </StatusBadge>
-                        <span className="rounded-full bg-surface-variant px-2.5 py-1 text-label-sm text-on-surface-variant tabular-nums">
+                        <span className="rounded-lg bg-surface-variant px-2.5 py-1 text-label-sm text-on-surface-variant tabular-nums">
                           {formatNumber(item.options.length)} ตัวเลือก ·{" "}
                           {formatTimeLimit(item.timeLimit)} · {formatNumber(item.points)} คะแนน
                         </span>

@@ -214,7 +214,7 @@ export default function DashboardPage() {
             )}
           </section>
 
-          <section aria-label="ทางลัด" className="grid gap-6 md:grid-cols-2">
+          <section aria-label="ทางลัด" className="grid gap-6 lg:grid-cols-2">
             <div className={`${cardClass} p-6`}>
               <h2 className="font-display text-headline-md text-on-surface">สร้างแบบทดสอบใหม่</h2>
               <p className="mt-1 text-body-md text-on-surface-variant">

@@ -62,7 +62,7 @@ export function QuizWorkspaceHeader({
       </div>
 
       <nav aria-label="ส่วนของแบบทดสอบ" className="border-b border-outline-variant/60">
-        <ul className="-mb-px flex gap-1 overflow-x-auto">
+        <ul className="relative -mb-px flex gap-1 overflow-x-auto">
           {TABS.map((tab) => {
             const current = tab.key === active;
             const href = tab.href(quiz.id);

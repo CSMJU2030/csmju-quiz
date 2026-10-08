@@ -334,14 +334,12 @@ function JoinInner() {
           {channels.map(({ key, href, title, desc, Icon, active }) => {
             const body = (
               <>
-                <span className="flex items-center gap-2 text-label-md">
-                  {active ? (
-                    <CheckIcon className="h-5 w-5 shrink-0" />
-                  ) : (
-                    <Icon className="h-5 w-5 shrink-0" />
-                  )}
-                  {title}
-                </span>
+                {active ? (
+                  <CheckIcon className="h-5 w-5 shrink-0" />
+                ) : (
+                  <Icon className="h-5 w-5 shrink-0" />
+                )}
+                <span className="text-label-md">{title}</span>
                 <span
                   className={`text-label-sm ${active ? "text-on-primary/80" : "text-on-surface-variant"}`}
                 >
@@ -350,7 +348,7 @@ function JoinInner() {
               </>
             );
             const box =
-              "flex min-h-24 flex-col items-start justify-center gap-1 rounded-xl border-2 px-4 py-3 text-left transition-colors";
+              "flex min-h-24 flex-col items-start justify-start gap-1 rounded-xl border-2 px-3 py-3 text-left transition-colors sm:px-4";
             return active ? (
               <div
                 key={key}

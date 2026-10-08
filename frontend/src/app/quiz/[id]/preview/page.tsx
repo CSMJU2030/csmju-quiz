@@ -303,7 +303,7 @@ export default function QuizPreviewPage() {
               {formatPercent((correctCount / total) * 100)})
             </p>
           </div>
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-outline-variant/40 bg-surface text-label-md text-on-surface-variant">
